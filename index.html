@@ -3,184 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Тарелка</title>
+<title>Порция</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%20fill%3D%22%231D4A30%22/%3E%20%3Cpath%20d%3D%22M17%2033%20A15%2013%200%200%201%2047%2033%20Z%22%20fill%3D%22%23E8A949%22/%3E%20%3Cpath%20d%3D%22M35%2023.5%20C38%2017.5%2044%2016%2048.5%2017.5%20C47%2023%2041%2026%2035%2023.5%20Z%22%20fill%3D%22%23BFDDC6%22/%3E%20%3Cpath%20d%3D%22M35%2023.5%20C39%2021.5%2043%2020%2046%2018.5%22%20fill%3D%22none%22%20stroke%3D%22%231D4A30%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22/%3E%20%3Cpath%20d%3D%22M11%2032%20H53%20C53%2045%2044%2051.5%2032%2051.5%20C20%2051.5%2011%2045%2011%2032%20Z%22%20fill%3D%22%23F4F6F1%22/%3E%20%3Crect%20x%3D%2225%22%20y%3D%2250.5%22%20width%3D%2214%22%20height%3D%224%22%20rx%3D%222%22%20fill%3D%22%23F4F6F1%22/%3E%20%3Cg%20stroke%3D%22%231D4A30%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22%3E%20%3Cpath%20d%3D%22M17%2037.5%20H23%22/%3E%3Cpath%20d%3D%22M18.5%2042%20H22.5%22/%3E%3Cpath%20d%3D%22M21%2046.5%20H25%22/%3E%20%3C/g%3E%20%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
-<style>
-:root{
-  --bg:#F4F6F1; --surface:#FFFFFF; --ink:#1E2A22; --muted:#66756A; --line:#DDE3DA;
-  --accent:#2F7A4A; --accent-ink:#FFFFFF; --accent-soft:#E2EFE5; --danger:#B3402E;
-  --c-breakfast:#D98E1F; --c-lunch:#2F7A4A; --c-dinner:#4B5BB8; --c-snack:#C4577E;
-  --m-p:#4B5BB8; --m-f:#D98E1F; --m-c:#2F7A4A;
-  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
-  --body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    color-scheme:dark;
-    --bg:#131915; --surface:#1B231D; --ink:#E6EDE7; --muted:#93A197; --line:#2C372F;
-    --accent:#5DB67C; --accent-ink:#0E1A12; --accent-soft:#223528; --danger:#E0715D;
-    --c-breakfast:#E8A949; --c-lunch:#5DB67C; --c-dinner:#8C99EC; --c-snack:#E07FA3;
-    --m-p:#8C99EC; --m-f:#E8A949; --m-c:#5DB67C;
-  }
-}
-:root[data-theme="dark"]{
-  color-scheme:dark;
-  --bg:#131915; --surface:#1B231D; --ink:#E6EDE7; --muted:#93A197; --line:#2C372F;
-  --accent:#5DB67C; --accent-ink:#0E1A12; --accent-soft:#223528; --danger:#E0715D;
-  --c-breakfast:#E8A949; --c-lunch:#5DB67C; --c-dinner:#8C99EC; --c-snack:#E07FA3;
-  --m-p:#8C99EC; --m-f:#E8A949; --m-c:#5DB67C;
-}
-*{box-sizing:border-box}
-[hidden]{display:none!important}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
-.wrap{max-width:640px;margin:0 auto;padding:24px 16px 48px;display:flex;flex-direction:column;gap:20px}
-h1{font-family:var(--display);font-weight:700;font-size:28px;margin:0;letter-spacing:-.01em}
-h2{font-family:var(--display);font-weight:500;font-size:20px;margin:0;text-wrap:balance}
-header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.status{font-size:12px;color:var(--muted)}
-.acct{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0}
-.who{display:inline-flex;align-items:center;gap:8px;font-weight:500;font-size:14px;max-width:100%}
-.who img{width:24px;height:24px;border-radius:50%;flex:none}
-.who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-button,input,select{font:inherit;color:inherit}
-button{cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-
-.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
-.tabs button{border:0;background:none;padding:10px 10px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
-.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
-.view{display:flex;flex-direction:column;gap:20px}
-
-.daynav{display:flex;align-items:center;gap:8px}
-.daynav .title{flex:1;font-family:var(--display);font-weight:500;font-size:20px;text-wrap:balance}
-.iconbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;font-size:18px;line-height:1;flex:none}
-.linkbtn{border:0;background:none;color:var(--accent);font-weight:600;padding:4px 6px}
-
-.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.wd{border:1px solid transparent;background:none;border-radius:12px;padding:8px 0 6px;display:flex;flex-direction:column;align-items:center;gap:4px}
-.wd .dn{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
-.wd .dd{font-weight:600;font-variant-numeric:tabular-nums}
-.wd .dots{display:flex;gap:3px;height:6px}
-.wd .dots i{width:6px;height:6px;border-radius:50%;display:block}
-.wd[aria-current="date"]{background:var(--surface);border-color:var(--line)}
-.wd.today .dd{color:var(--accent)}
-
-.summary{display:flex;gap:12px 24px;flex-wrap:wrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding-block:12px}
-.stat{display:flex;flex-direction:column}
-.stat b{font-family:var(--display);font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
-.stat span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.goal{flex:1 1 100%;display:flex;flex-direction:column;gap:6px}
-.goalhead{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;flex-wrap:wrap}
-.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
-.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:4px;transition:width .3s}
-.bar.over i{background:var(--c-breakfast)}
-.macros{flex:1 1 100%;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.macro{display:flex;flex-direction:column;gap:4px;font-size:13px;font-variant-numeric:tabular-nums;min-width:0}
-.macro .mh{display:flex;justify-content:space-between;gap:4px;color:var(--muted);flex-wrap:wrap}
-.macro .mh b{color:var(--ink);font-weight:600}
-.macro .bar{height:6px}
-.macro.p .bar i{background:var(--m-p)} .macro.f .bar i{background:var(--m-f)} .macro.c .bar i{background:var(--m-c)}
-.habit{flex:1 1 100%;display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
-.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);font-size:13px;color:var(--muted)}
-.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
-
-.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
-.types{display:flex;gap:6px;flex-wrap:wrap}
-.types label,.seg label{position:relative}
-.types input,.seg input{position:absolute;opacity:0;pointer-events:none}
-.types span{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);font-size:14px}
-.types span::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
-.types input:checked + span{background:var(--accent-soft);border-color:var(--c)}
-.types input:focus-visible + span,.seg input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
-.favs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.favs .lbl{font-size:12px;color:var(--muted);margin-right:2px}
-.fav{display:inline-flex;align-items:stretch;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--bg);max-width:100%}
-.fav button{border:0;background:none;padding:5px 10px;font-size:13px}
-.fav .use{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
-.fav .x{color:var(--muted);padding:5px 8px 5px 2px}
-.fav .x:hover{color:var(--danger)}
-.row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.row .name{grid-column:1/-1}
-.field{display:flex;flex-direction:column;gap:4px;min-width:0}
-.field label{font-size:12px;color:var(--muted)}
-.field input,.field select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
-.check{display:inline-flex;align-items:center;gap:8px;font-size:14px}
-.check input{width:18px;height:18px;accent-color:var(--accent)}
-.estimate{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.submit{align-self:flex-start;background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 18px;font-weight:600}
-.submit:disabled,.ghost:disabled{opacity:.5;cursor:default}
-.ghost{border:1px solid var(--accent);color:var(--accent);background:none;border-radius:10px;padding:8px 14px;font-weight:600}
-.hint{font-size:13px;color:var(--muted)}
-.hint b{color:var(--ink);font-weight:600}
-.err{color:var(--danger);font-size:13px;margin:0}
-.btns{display:flex;gap:8px;flex-wrap:wrap}
-
-.list{display:flex;flex-direction:column;list-style:none;margin:0;padding:0}
-.meal{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--line)}
-.meal:last-child{border-bottom:0}
-.meal time{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;padding-top:1px}
-.meal .what{display:flex;flex-direction:column;gap:2px;min-width:0}
-.meal .nm{font-weight:500;overflow-wrap:anywhere}
-.meal .tag{font-size:12px;color:var(--c);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
-.meal .sub{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
-.meal .side{display:flex;align-items:center;gap:2px}
-.meal .kcal{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;white-space:nowrap;margin-right:4px}
-.del,.star{border:0;background:none;color:var(--muted);font-size:14px;padding:4px 6px;border-radius:6px;line-height:1}
-.del:hover{color:var(--danger)}
-.star.on{color:var(--c-breakfast)}
-.del.confirm{color:var(--accent-ink);background:var(--danger);font-size:13px}
-.empty{color:var(--muted);padding:16px 0;margin:0}
-.note{font-size:13px;color:var(--muted);background:var(--accent-soft);border-radius:10px;padding:10px 12px;margin:0}
-
-.lead{margin:0;color:var(--muted);max-width:60ch}
-fieldset.seg{border:0;padding:0;margin:0;display:flex;gap:6px;flex-wrap:wrap}
-fieldset.seg legend{font-size:12px;color:var(--muted);padding:0;margin-bottom:4px;width:100%}
-.seg span{display:inline-block;padding:7px 14px;border-radius:999px;border:1px solid var(--line);font-size:14px}
-.seg input:checked + span{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
-.preview:empty{display:none}
-.preview{border-radius:12px;background:var(--bg);border:1px dashed var(--line);padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:6px}
-.warn{border-radius:10px;padding:10px 12px;font-size:14px;background:color-mix(in srgb,var(--c-breakfast) 14%,transparent);border:1px solid color-mix(in srgb,var(--c-breakfast) 40%,transparent)}
-.stop{background:color-mix(in srgb,var(--danger) 12%,transparent);border-color:color-mix(in srgb,var(--danger) 40%,transparent)}
-.good{border-radius:10px;padding:10px 12px;font-size:14px;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent)}
-.big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.big b{font-family:var(--display);font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:var(--accent)}
-.big span{color:var(--muted)}
-.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px 16px;margin:0}
-.facts div{display:flex;flex-direction:column}
-.facts dt{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.facts dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
-.pill{align-self:flex-start;display:inline-block;font-size:12px;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
-.pill.hard{background:color-mix(in srgb,var(--c-breakfast) 18%,transparent);color:var(--c-breakfast)}
-.small{font-size:13px;color:var(--muted);margin:0;max-width:65ch}
-
-.chart{width:100%;height:auto;display:block}
-.chart text{fill:var(--muted);font-size:13px;font-family:var(--body);font-variant-numeric:tabular-nums}
-.chart .grid{stroke:var(--line);stroke-width:1}
-.chart .line{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
-.chart .area{fill:var(--accent);opacity:.1}
-.chart .pt{fill:var(--surface);stroke:var(--accent);stroke-width:2}
-.chart .pt.last{fill:var(--accent)}
-.chart .target{stroke:var(--c-breakfast);stroke-width:1.5;stroke-dasharray:5 4}
-.chart .target-l{fill:var(--c-breakfast);font-weight:600}
-.chart .barr{fill:var(--accent)}
-.chart .barr.over{fill:var(--c-breakfast)}
-.chart .barr.none{fill:var(--line)}
-.chart .val{fill:var(--ink);font-weight:600}
-.wlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
-.wlist li{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
-.wlist li:last-child{border-bottom:0}
-.wlist .d{color:var(--muted);font-size:14px}
-.wlist .kg{font-weight:600}
-.wlist .dl{font-size:13px;color:var(--muted);min-width:56px;text-align:right}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px}
-</style>
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="css/styles.css">
+<script src="js/app.js" defer></script>
 </head>
 <body>
-
 <div class="wrap">
   <header>
-    <h1>Тарелка</h1>
+    <h1 style="display:flex;align-items:center;gap:10px"><svg class="logo" viewBox="8 12 48 46" aria-hidden="true"><path class="lg-food" d="M17 33 A15 13 0 0 1 47 33 Z"/><path class="lg-leaf" d="M35 23.5 C38 17.5 44 16 48.5 17.5 C47 23 41 26 35 23.5 Z"/><path class="lg-bowl" d="M11 32 H53 C53 45 44 51.5 32 51.5 C20 51.5 11 45 11 32 Z"/><rect class="lg-bowl" x="25" y="50.5" width="14" height="4" rx="2"/><g class="lg-ticks"><path d="M17 37.5 H23"/><path d="M18.5 42 H22.5"/><path d="M21 46.5 H25"/></g></svg>Порция <span class="plusbadge" id="plusBadge" hidden>Плюс</span></h1>
     <div class="acct">
       <span class="who" id="who" hidden><img id="whoImg" alt=""><span id="whoName"></span></span>
       <span class="status" id="status">Подключаюсь…</span>
@@ -189,11 +23,13 @@ fieldset.seg legend{font-size:12px;color:var(--muted);padding:0;margin-bottom:4p
 
   <p class="note" id="localNote" hidden>Облачное хранилище недоступно в этом просмотре, записи живут только до перезагрузки страницы.</p>
 
+  <div id="nudges" class="nudges" aria-live="polite"></div>
+
   <nav class="tabs" role="tablist" aria-label="Разделы">
     <button role="tab" id="tab-diary" aria-selected="true" aria-controls="view-diary">Дневник</button>
     <button role="tab" id="tab-weight" aria-selected="false" aria-controls="view-weight">Вес</button>
     <button role="tab" id="tab-stats" aria-selected="false" aria-controls="view-stats">Неделя</button>
-    <button role="tab" id="tab-plan" aria-selected="false" aria-controls="view-plan">Программа</button>
+    <button role="tab" id="tab-plan" aria-selected="false" aria-controls="view-plan">Профиль</button>
   </nav>
 
   <!-- ================= ДНЕВНИК ================= -->
@@ -216,9 +52,22 @@ fieldset.seg legend{font-size:12px;color:var(--muted);padding:0;margin-bottom:4p
         <div class="goalhead"><span id="goalText"></span><span id="goalLeft"></span></div>
         <div class="bar"><i id="goalBar"></i></div>
       </div>
+      <p class="small" id="sRange" hidden style="flex:1 1 100%"></p>
       <div class="macros" id="macroBox" hidden></div>
       <div class="habit" id="habitBox" hidden></div>
     </div>
+
+    <details class="card cook" id="cook">
+      <summary>Что приготовить из того, что есть дома?</summary>
+      <div class="cookbody">
+        <p class="small" id="cookTarget"></p>
+        <div class="field"><label for="cookItems">Что есть в холодильнике и на полках</label>
+          <textarea id="cookItems" rows="3" maxlength="600" placeholder="Яйца, гречка, куриное филе, помидоры, сыр, сметана"></textarea></div>
+        <div class="btns"><button type="button" class="submit" id="cookBtn">Подобрать блюдо</button></div>
+        <p class="err" id="cookErr" hidden></p>
+        <div id="cookOut" class="cookout"></div>
+      </div>
+    </details>
 
     <form class="card" id="addForm" autocomplete="off">
       <div class="favs" id="favs" hidden></div>
@@ -232,6 +81,8 @@ fieldset.seg legend{font-size:12px;color:var(--muted);padding:0;margin-bottom:4p
       <label class="check"><input type="checkbox" id="fVeg"> Есть овощи или фрукты</label>
       <div class="estimate" id="estRow" hidden>
         <button type="button" class="ghost" id="estBtn">Рассчитать калории и БЖУ</button>
+        <label class="ghost photobtn" id="photoBtn" hidden>Распознать по фото<input type="file" id="fPhoto" accept="image/*"></label>
+        <img class="thumb" id="thumb" alt="Фото еды" hidden>
         <span class="hint" id="estHint"></span>
       </div>
       <p class="err" id="formErr" hidden></p>
@@ -272,6 +123,7 @@ fieldset.seg legend{font-size:12px;color:var(--muted);padding:0;margin-bottom:4p
 
   <!-- ================= ПРОГРАММА ================= -->
   <div id="view-plan" role="tabpanel" aria-labelledby="tab-plan" class="view" hidden>
+    <h2 class="sect">Программа питания</h2>
     <form class="card" id="planForm" autocomplete="off" novalidate>
       <p class="lead">Ответьте на несколько вопросов: посчитаем дневную норму калорий и БЖУ, а для цели по весу — срок, за который можно безопасно к ней прийти.</p>
       <fieldset class="seg"><legend>Цель</legend>
@@ -306,670 +158,150 @@ fieldset.seg legend{font-size:12px;color:var(--muted);padding:0;margin-bottom:4p
       </div>
     </form>
     <div id="planCard" class="card" hidden></div>
+
+    <form class="card" id="remForm" autocomplete="off">
+      <h2>Напоминания</h2>
+      <label class="check"><input type="checkbox" id="remOn" checked> Напоминать записать приём пищи</label>
+      <div class="row" id="remTimes">
+        <div class="field"><label for="remBreakfast">Завтрак после</label><input id="remBreakfast" type="time" value="10:00"></div>
+        <div class="field"><label for="remLunch">Обед после</label><input id="remLunch" type="time" value="14:00"></div>
+        <div class="field"><label for="remDinner">Ужин после</label><input id="remDinner" type="time" value="20:00"></div>
+      </div>
+      <p class="small">Если к этому времени приём пищи не записан, вверху приложения появится напоминание. Оно исчезнет, как только вы запишете еду или отметите, что сегодня этот приём пропускаете. Напоминания видны, пока приложение открыто.</p>
+      <p class="small" id="remSaved" aria-live="polite"></p>
+    </form>
+
+    <section class="card" aria-labelledby="dataTitle">
+      <h2 id="dataTitle">Мои данные</h2>
+      <p class="small">Скачайте дневник и журнал веса в CSV — файл открывается в Excel, Google Таблицах или Numbers, его можно показать врачу или диетологу.</p>
+      <div class="btns">
+        <button type="button" class="ghost" id="expMeals">Скачать дневник (CSV)</button>
+        <button type="button" class="ghost" id="expWeights">Скачать вес (CSV)</button>
+      </div>
+      <p class="small" id="expMsg" aria-live="polite"></p>
+      <textarea id="expFallback" class="fallback" rows="6" readonly hidden aria-label="Данные CSV"></textarea>
+      <hr class="sep">
+      <div class="danger">
+        <b>Удалить все мои данные</b>
+        <p class="small">Навсегда удалит все приёмы пищи, взвешивания, избранное, программу и настройки. Аккаунт Claude при этом не удаляется. Отменить нельзя — если данные нужны, сначала скачайте их.</p>
+        <div class="btns"><button type="button" class="dangerbtn" id="delStart">Удалить все данные…</button></div>
+        <div id="delConfirm" class="delconfirm" hidden>
+          <div class="field"><label for="delWord">Чтобы подтвердить, введите слово УДАЛИТЬ</label><input id="delWord" autocomplete="off"></div>
+          <div class="btns">
+            <button type="button" class="dangerbtn solid" id="delGo" disabled>Удалить навсегда</button>
+            <button type="button" class="ghost" id="delCancel">Отмена</button>
+          </div>
+        </div>
+        <p class="small" id="delMsg" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <details class="card privacy" id="privacy">
+      <summary><h2>Конфиденциальность</h2></summary>
+      <div class="policy">
+        <p><b>Коротко:</b> ваши записи видите только вы. Мы не показываем рекламу и не продаём данные.</p>
+        <h3>Что хранится</h3>
+        <ul>
+          <li>Приёмы пищи, взвешивания, избранные блюда, программа питания и настройки напоминаний.</li>
+          <li>Для расчёта программы — возраст, рост, вес, пол и уровень активности, которые вы ввели сами.</li>
+        </ul>
+        <h3>Где и кто видит</h3>
+        <ul>
+          <li>Данные хранятся в защищённом хранилище Claude и привязаны к вашему аккаунту. Каждый пользователь видит только свою папку — даже автор приложения не может открыть чужие записи.</li>
+          <li>Выбранная тема, список продуктов «что есть дома» и счётчик бесплатных ИИ-запросов хранятся только в вашем браузере.</li>
+        </ul>
+        <h3>ИИ и фото</h3>
+        <ul>
+          <li>Когда вы нажимаете «Рассчитать», «Распознать по фото» или «Подобрать блюдо», название блюда, фото или список продуктов отправляются Claude для ответа.</li>
+          <li>Фото приложение не сохраняет: после распознавания остаются только название блюда, вес и калории.</li>
+          <li>Запросы к ИИ отправляются только по вашему нажатию, никогда автоматически.</li>
+        </ul>
+        <h3>Ваши права</h3>
+        <ul>
+          <li>Скачать все свои данные — кнопки выше, в разделе «Мои данные».</li>
+          <li>Удалить все данные навсегда — там же.</li>
+        </ul>
+        <h3>Не медицинский совет</h3>
+        <p>Расчёты калорий и программы — ориентир по общепринятым формулам, а не рекомендация врача. При заболеваниях, беременности или расстройствах пищевого поведения обратитесь к специалисту.</p>
+        <p class="small">Черновик политики. Перед публичным запуском его стоит проверить у юриста.</p>
+      </div>
+    </details>
+  </div>
+
+  <footer class="themebar" style="flex-direction:column;gap:14px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center">
+      <button type="button" class="ghost" id="openPlus">Порция Плюс</button>
+      <span id="plusState"></span>
+    </div>
+    <button type="button" class="pluslink" id="openPrivacy" style="color:var(--muted)">Конфиденциальность и мои данные</button>
+    <fieldset class="seg" id="themeSeg" style="justify-content:center">
+      <legend style="text-align:center">Оформление</legend>
+      <label><input type="radio" name="theme" id="thSystem" value="system" checked><span>Системное</span></label>
+      <label><input type="radio" name="theme" id="thLight" value="light"><span>Светлое</span></label>
+      <label><input type="radio" name="theme" id="thDark" value="dark"><span>Тёмное</span></label>
+    </fieldset>
+  </footer>
+</div>
+
+<div class="backdrop" id="paywall" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+    <div class="top">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span class="plusbadge" style="align-self:flex-start">Плюс</span>
+        <h2 id="pwTitle">Порция Плюс</h2>
+      </div>
+      <button type="button" class="x-close" id="pwClose" aria-label="Закрыть">×</button>
+    </div>
+    <p class="reason" id="pwReason">Больше возможностей для вашей цели.</p>
+    <ul class="benefits">
+      <li><div><b>Безлимитный ИИ</b><span>Распознавание по фото и расчёт калорий и БЖУ без ограничений. Бесплатно — 3 в день.</span></div></li>
+      <li><div><b>Адаптивная программа</b><span>Норма и прогноз пересчитываются после каждого взвешивания.</span></div></li>
+      <li><div><b>Норма БЖУ</b><span>Белки, жиры и углеводы под вашу цель — в программе и в дневнике.</span></div></li>
+      <li><div><b>Подробные итоги недели</b><span>Средние БЖУ, регулярность питания, овощи, изменение веса.</span></div></li>
+    </ul>
+    <div class="plans" role="radiogroup" aria-label="Тариф">
+      <label><input type="radio" name="tariff" id="tMonth" value="month"><span class="plan"><span class="pn">Месяц</span><span class="pp">299 ₽</span><span class="ps">в месяц</span></span></label>
+      <label><input type="radio" name="tariff" id="tYear" value="year" checked><span class="plan"><span class="save">−45%</span><span class="pn">Год</span><span class="pp">1 990 ₽</span><span class="ps">≈ 166 ₽ в месяц</span></span></label>
+    </div>
+    <button type="button" class="submit" id="pwBuy">Попробовать 7 дней бесплатно</button>
+    <p class="small" style="text-align:center;margin-inline:auto">Затем по выбранному тарифу. Отменить можно в любой момент.</p>
+    <div class="demo" id="pwDemo" hidden>
+      <b style="color:var(--ink)">Это демо: оплата пока не подключена.</b>
+      <span>Цены — примерные. Можно включить Плюс в демо-режиме, чтобы посмотреть, как выглядит приложение с подпиской.</span>
+      <div class="btns"><button type="button" class="ghost" id="pwDemoOn">Включить демо-Плюс</button></div>
+    </div>
   </div>
 </div>
 
-<script>
-/* ============ helpers ============ */
-const $=id=>document.getElementById(id);
-const pad=n=>String(n).padStart(2,"0");
-const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-const parse=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
-const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
-const daysBetween=(a,b)=>Math.round((parse(b)-parse(a))/86400000);
-const today=()=>iso(new Date());
-const monday=s=>addDays(s,-((parse(s).getDay()+6)%7));
-const nowHM=()=>{const d=new Date();return `${pad(d.getHours())}:${pad(d.getMinutes())}`};
-const fmtDay=new Intl.DateTimeFormat("ru-RU",{weekday:"long",day:"numeric",month:"long"});
-const fmtWd=new Intl.DateTimeFormat("ru-RU",{weekday:"short"});
-const fmtShort=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"short"});
-const _fmtDate=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",year:"numeric"});
-const fmtDate={format:d=>_fmtDate.format(d).replace(/\s*г\.$/,"")};
-const fmtN=(n,d=0)=>Number(n).toLocaleString("ru-RU",{maximumFractionDigits:d,minimumFractionDigits:d});
-const mk=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e};
-const sum=(arr,f)=>arr.reduce((s,x)=>s+(Number(f(x))||0),0);
-const isNum=v=>typeof v==="number"&&isFinite(v);
-
-/* ============ state ============ */
-const TYPES=[
-  {id:"breakfast",label:"Завтрак",c:"--c-breakfast",h:[5,11]},
-  {id:"lunch",label:"Обед",c:"--c-lunch",h:[11,16]},
-  {id:"dinner",label:"Ужин",c:"--c-dinner",h:[16,23]},
-  {id:"snack",label:"Перекус",c:"--c-snack",h:null},
-];
-const T=Object.fromEntries(TYPES.map(t=>[t.id,t]));
-const MAIN=["breakfast","lunch","dinner"];
-const ACT=[
-  {v:1.2,l:"Сидячая работа, почти без спорта"},
-  {v:1.375,l:"Лёгкая: 1–3 тренировки в неделю"},
-  {v:1.55,l:"Средняя: 3–5 тренировок в неделю"},
-  {v:1.725,l:"Высокая: 6–7 тренировок или физический труд"},
-];
-const GOALS={weight:"Изменить вес",keep:"Удерживать вес",regular:"Питаться регулярно",veggies:"Больше овощей и фруктов"};
-const VEG_TARGET=3;          // приёмов с овощами/фруктами в день
-const KCAL_PER_KG=7700;
-
-let selected=today(), statsWeek=monday(today()), currentTab="diary";
-let meals=[], weights=[], favorites=[];
-let plan=null, editingPlan=false;
-let db=null, profileRef=null, mealsCol=null, weightsCol=null, favCol=null;
-let sample=null, est=null;   // est = {name, per100, p100, f100, c100, veg, note}
-let pendingDelete=null, pendingWDelete=null;
-
-/* ============ plan math ============ */
-// Mifflin–St Jeor + safety limits. Numbers only; wording lives elsewhere.
-function calcPlan(p){
-  const r={};
-  const h=p.height/100;
-  r.bmr=10*p.weight+6.25*p.height-5*p.age+(p.sex==="m"?5:-161);
-  r.tdee=r.bmr*p.activity;
-  r.floor=p.sex==="m"?1500:1200;
-  r.minHealthy=Math.ceil(18.5*h*h*10)/10;
-  const goal=p.goal||"weight";
-  const diff=p.target-p.weight;
-  if(goal!=="weight") r.goal="keep";
-  else if(Math.abs(diff)<0.5) r.goal="keep";
-  else if(p.dir&&Math.sign(diff)!==p.dir){r.goal="keep";r.reached=true}
-  else r.goal=diff<0?"lose":"gain";
-  if(goal==="weight"&&Math.abs(diff)<0.5&&p.dir)r.reached=true;
-  if(r.goal==="lose"&&p.target<r.minHealthy){r.error="underweight";return r}
-  if(r.goal==="keep"){r.kcal=Math.round(r.tdee/10)*10;r.pace=0;addMacros(r,p);return r}
-  const lose=r.goal==="lose";
-  let maxPace=lose?Math.min(1,p.weight*0.01):0.5;
-  if(lose)maxPace=Math.min(maxPace,(r.tdee-r.floor)*7/KCAL_PER_KG);
-  if(maxPace<0.1){r.error="nofloor";return r}
-  r.maxPace=maxPace;
-  r.autoPace=Math.min(lose?0.5:0.25,maxPace);
-  const kg=Math.abs(diff);
-  r.autoDate=addDays(p.start,Math.ceil(kg/r.autoPace*7));
-  r.pace=r.autoPace;r.limited=false;
-  if(p.deadline){
-    const days=daysBetween(p.start,p.deadline);
-    if(days<7){r.error="deadline";return r}
-    r.neededPace=kg/(days/7);
-    if(r.neededPace>maxPace){r.pace=maxPace;r.limited=true}else r.pace=r.neededPace;
-  }
-  r.eta=addDays(p.start,Math.ceil(kg/r.pace*7));
-  const delta=r.pace*KCAL_PER_KG/7;
-  r.kcal=Math.round((lose?r.tdee-delta:r.tdee+delta)/10)*10;
-  if(lose)r.kcal=Math.max(r.kcal,r.floor);
-  r.level=r.pace<=0.5?"Мягкий":r.pace<=0.75?"Умеренный":"Интенсивный";
-  addMacros(r,p);
-  return r;
-}
-// Белок от веса (не выше веса при ИМТ 25), жиры 28% калорий, углеводы — остаток.
-function addMacros(r,p){
-  const h=p.height/100;
-  const refW=Math.min(p.weight,25*h*h);
-  const perKg=r.goal==="keep"?1.2:1.6;
-  r.protein=Math.round(refW*perKg);
-  r.fat=Math.round(r.kcal*0.28/9);
-  r.carbs=Math.max(0,Math.round((r.kcal-r.protein*4-r.fat*9)/4));
-}
-// План пересчитывается от последнего записанного веса.
-function effPlan(){
-  if(!plan)return null;
-  const p={goal:"weight",...plan};
-  const latest=latestWeight();
-  if(latest&&latest.date>=p.start&&(latest.date!==p.start||latest.kg!==p.weight)){
-    return {...p,weight:latest.kg,start:latest.date,anchored:true};
-  }
-  return p;
-}
-function latestWeight(){return weights.length?[...weights].sort((a,b)=>b.date.localeCompare(a.date))[0]:null}
-
-/* ============ tabs ============ */
-function setTab(t){
-  currentTab=t;
-  for(const k of ["diary","weight","stats","plan"]){
-    $("tab-"+k).setAttribute("aria-selected",k===t);
-    $("view-"+k).hidden=k!==t;
-  }
-  renderAll();
-}
-function renderAll(){
-  if(currentTab==="diary")renderDiary();
-  if(currentTab==="weight")renderWeight();
-  if(currentTab==="stats")renderStats();
-  if(currentTab==="plan")renderPlan();
-}
-
-/* ============ diary ============ */
-function guessType(){
-  const h=new Date().getHours();
-  const t=TYPES.find(t=>t.h&&h>=t.h[0]&&h<t.h[1]);
-  return t?t.id:"snack";
-}
-function buildTypes(){
-  const g=guessType();
-  for(const t of TYPES){
-    const l=mk("label");l.style.setProperty("--c",`var(${t.c})`);
-    l.innerHTML=`<input type="radio" name="type" id="type-${t.id}" value="${t.id}" ${t.id===g?"checked":""}><span></span>`;
-    l.querySelector("span").textContent=t.label;
-    $("types").append(l);
-  }
-}
-const dayMeals=d=>meals.filter(m=>m.date===d).sort((a,b)=>a.time.localeCompare(b.time));
-
-function renderDiary(){
-  const day=dayMeals(selected);
-  const t=today(), yest=addDays(t,-1);
-  const label=fmtDay.format(parse(selected));
-  $("dayTitle").textContent=selected===t?"Сегодня, "+label:selected===yest?"Вчера, "+label:label.replace(/^./,c=>c.toUpperCase());
-  $("toToday").hidden=selected===t;
-  // week strip
-  const mon=monday(selected);
-  $("week").innerHTML="";
-  for(let i=0;i<7;i++){
-    const ds=addDays(mon,i);
-    const b=mk("button","wd"+(ds===t?" today":""));b.type="button";
-    if(ds===selected)b.setAttribute("aria-current","date");
-    const dm=dayMeals(ds);
-    b.setAttribute("aria-label",`${fmtDay.format(parse(ds))}: приёмов ${dm.length}`);
-    b.innerHTML=`<span class="dn">${fmtWd.format(parse(ds))}</span><span class="dd">${parse(ds).getDate()}</span><span class="dots">${dm.slice(0,5).map(m=>`<i style="background:var(${T[m.type]?.c||"--muted"})"></i>`).join("")}</span>`;
-    b.onclick=()=>{selected=ds;pendingDelete=null;renderDiary()};
-    $("week").append(b);
-  }
-  // summary
-  const withK=day.filter(m=>isNum(m.kcal));
-  const eaten=sum(withK,m=>m.kcal);
-  $("sCount").textContent=day.length;
-  $("sKcal").textContent=withK.length?fmtN(eaten):"—";
-  $("sLast").textContent=day.length?day[day.length-1].time:"—";
-  const ep=effPlan(), res=ep?calcPlan(ep):null, ok=res&&!res.error;
-  $("goalBox").hidden=!ok;
-  if(ok){
-    $("goalText").textContent=`${fmtN(eaten)} из ${fmtN(res.kcal)} ккал по программе`;
-    const left=res.kcal-eaten;
-    $("goalLeft").textContent=left>=0?`осталось ${fmtN(left)}`:`сверх нормы ${fmtN(-left)}`;
-    $("goalBar").style.width=Math.min(100,eaten/res.kcal*100)+"%";
-    $("goalBar").parentElement.classList.toggle("over",left<0);
-  }
-  // macros
-  const mb=$("macroBox");mb.innerHTML="";
-  const hasMac=day.some(m=>isNum(m.protein));
-  mb.hidden=!(ok||hasMac);
-  if(!mb.hidden){
-    for(const [k,cls,lbl] of [["protein","p","Белки"],["fat","f","Жиры"],["carbs","c","Углеводы"]]){
-      const got=Math.round(sum(day,m=>m[k]));
-      const goal=ok?res[k]:null;
-      const box=mk("div","macro "+cls);
-      const head=mk("div","mh");head.append(mk("span",null,lbl));
-      const v=mk("span");const b=mk("b",null,fmtN(got));v.append(b,document.createTextNode(goal?` / ${fmtN(goal)} г`:" г"));head.append(v);
-      const bar=mk("div","bar");const i=mk("i");i.style.width=goal?Math.min(100,got/goal*100)+"%":"0";bar.append(i);
-      box.append(head,bar);mb.append(box);
-    }
-  }
-  // habit goals
-  const hb=$("habitBox");hb.innerHTML="";
-  const g=plan?.goal;
-  if(g==="regular"){
-    hb.hidden=false;hb.append(mk("span",null,"Основные приёмы:"));
-    for(const id of MAIN){const on=day.some(m=>m.type===id);hb.append(mk("span","chip"+(on?" on":""),(on?"✓ ":"")+T[id].label))}
-  }else if(g==="veggies"){
-    hb.hidden=false;const n=day.filter(m=>m.veg).length;
-    hb.append(mk("span",null,"С овощами или фруктами:"),mk("span","chip"+(n>=VEG_TARGET?" on":""),`${n} из ${VEG_TARGET} приёмов`));
-  }else hb.hidden=true;
-  // favorites
-  renderFavs();
-  // list
-  const ul=$("list");ul.innerHTML="";
-  if(!day.length){ul.append(mk("p","empty",selected===t?"Пока ничего не записано. Добавьте первый приём пищи выше.":"В этот день записей нет."));return}
-  for(const m of day){
-    const li=mk("li","meal");li.style.setProperty("--c",`var(${T[m.type]?.c||"--muted"})`);
-    const what=mk("div","what");
-    what.append(mk("span","tag",T[m.type]?.label||m.type),mk("span","nm",m.name));
-    const subs=[];
-    if(isNum(m.protein))subs.push(`Б ${fmtN(m.protein)} · Ж ${fmtN(m.fat)} · У ${fmtN(m.carbs)}`);
-    if(m.veg)subs.push("овощи/фрукты");
-    if(subs.length)what.append(mk("span","sub",subs.join(" · ")));
-    const side=mk("div","side");
-    side.append(mk("span","kcal",[isNum(m.grams)?`${m.grams} г`:"",isNum(m.kcal)?`${m.kcal} ккал`:""].filter(Boolean).join(" · ")));
-    const fav=findFav(m.name);
-    const star=mk("button","star"+(fav?" on":""),fav?"★":"☆");star.type="button";
-    star.setAttribute("aria-label",fav?`Убрать «${m.name}» из избранного`:`Добавить «${m.name}» в избранное`);
-    star.onclick=()=>fav?removeFav(fav.id):addFav(m);
-    const armed=pendingDelete===m.id;
-    const del=mk("button","del"+(armed?" confirm":""),armed?"Удалить?":"✕");del.type="button";
-    del.setAttribute("aria-label",armed?"Подтвердить удаление":`Удалить «${m.name}»`);
-    del.onclick=()=>armed?removeMeal(m.id):(pendingDelete=m.id,renderDiary());
-    side.append(star,del);
-    li.append(mk("time",null,m.time),what,side);
-    ul.append(li);
-  }
-}
-
-function showErr(msg){const e=$("formErr");e.textContent=msg||"";e.hidden=!msg}
-function setStatus(s){$("status").textContent=s}
-
-async function addMeal(ev){
-  ev.preventDefault();showErr("");
-  const name=$("fName").value.trim(), time=$("fTime").value;
-  const type=(document.querySelector('input[name="type"]:checked')||{}).value||"snack";
-  if(!name){showErr("Напишите, что вы ели.");return}
-  if(!time){showErr("Укажите время.");return}
-  const meal={date:selected,time,type,name,createdAt:new Date().toISOString()};
-  const gRaw=$("fGrams").value.trim(), kRaw=$("fKcal").value.trim();
-  if(gRaw!==""){const g=Math.round(Number(gRaw));if(!(g>=1&&g<=5000)){showErr("Вес: число от 1 до 5000 г.");return}meal.grams=g}
-  if(kRaw!==""){const k=Math.round(Number(kRaw));if(!(k>=0&&k<=10000)){showErr("Калории: число от 0 до 10 000.");return}meal.kcal=k}
-  if($("fVeg").checked)meal.veg=true;
-  if(est&&est.name===name&&isNum(meal.grams)){
-    meal.kcalPer100=est.per100;
-    if(meal.kcal===Math.round(est.per100*meal.grams/100))meal.kcalSource=est.source||"ai";
-    if(isNum(est.p100)){
-      const g=meal.grams/100;
-      meal.protein=Math.round(est.p100*g);meal.fat=Math.round(est.f100*g);meal.carbs=Math.round(est.c100*g);
-      Object.assign(meal,{p100:est.p100,f100:est.f100,c100:est.c100});
-    }
-  }
-  $("submitBtn").disabled=true;
-  try{
-    if(mealsCol)await mealsCol.add(meal);
-    else{meals.push({id:"local-"+Date.now(),...meal});renderAll()}
-    $("fName").value="";$("fKcal").value="";$("fGrams").value="";$("fVeg").checked=false;$("fTime").value=nowHM();
-    est=null;resetHint();$("fName").focus();
-  }catch(e){showErr(e?.code==="quota_exceeded"?"Хранилище заполнено: удалите старые записи.":"Не удалось сохранить. Попробуйте ещё раз.")}
-  finally{$("submitBtn").disabled=false}
-}
-async function removeMeal(id){
-  pendingDelete=null;
-  if(mealsCol){try{await mealsCol.doc(id).delete()}catch(e){setStatus("Не удалось удалить")}}
-  else{meals=meals.filter(m=>m.id!==id);renderAll()}
-}
-
-/* ============ favorites ============ */
-const findFav=name=>favorites.find(f=>f.name.trim().toLowerCase()===String(name).trim().toLowerCase());
-function renderFavs(){
-  const box=$("favs");box.innerHTML="";
-  box.hidden=!favorites.length;
-  if(!favorites.length)return;
-  box.append(mk("span","lbl","Избранное:"));
-  for(const f of [...favorites].sort((a,b)=>a.name.localeCompare(b.name,"ru"))){
-    const w=mk("span","fav");
-    const use=mk("button","use",f.name);use.type="button";use.title="Подставить в форму";
-    use.onclick=()=>useFav(f);
-    const x=mk("button","x","×");x.type="button";x.setAttribute("aria-label",`Удалить «${f.name}» из избранного`);
-    x.onclick=()=>removeFav(f.id);
-    w.append(use,x);box.append(w);
-  }
-}
-function useFav(f){
-  $("fName").value=f.name;
-  $("fGrams").value=isNum(f.grams)?f.grams:"";
-  $("fKcal").value=isNum(f.kcal)?f.kcal:"";
-  $("fVeg").checked=!!f.veg;
-  if(f.type&&$("type-"+f.type))$("type-"+f.type).checked=true;
-  est=isNum(f.kcalPer100)?{name:f.name,per100:f.kcalPer100,p100:f.p100,f100:f.f100,c100:f.c100,note:"из избранного",source:f.kcalSource||"fav"}:null;
-  if(est)applyEstimate();else resetHint();
-  $("fGrams").focus();
-}
-async function addFav(m){
-  const f={name:m.name,type:m.type};
-  for(const k of ["grams","kcal","kcalPer100","p100","f100","c100","veg","kcalSource"])if(m[k]!==undefined)f[k]=m[k];
-  if(favCol){try{await favCol.add(f)}catch(e){setStatus("Не удалось добавить в избранное")}}
-  else{favorites.push({id:"local-"+Date.now(),...f});renderDiary()}
-}
-async function removeFav(id){
-  if(favCol){try{await favCol.doc(id).delete()}catch(e){setStatus("Не удалось удалить из избранного")}}
-  else{favorites=favorites.filter(f=>f.id!==id);renderDiary()}
-}
-
-/* ============ calorie & macro estimate (Claude via "sample") ============ */
-const HINT_DEFAULT="По названию и весу. Без веса возьмём обычную порцию.";
-function resetHint(){$("estHint").textContent=HINT_DEFAULT}
-function applyEstimate(){
-  if(!est)return;
-  const g=Number($("fGrams").value);
-  if(g>0)$("fKcal").value=Math.round(est.per100*g/100);
-  const h=$("estHint");h.textContent="";
-  h.append(mk("b",null,`≈ ${est.per100} ккал / 100 г`));
-  if(isNum(est.p100)){
-    const k=g>0?g/100:1;
-    h.append(document.createTextNode(` · Б ${fmtN(est.p100*k)} Ж ${fmtN(est.f100*k)} У ${fmtN(est.c100*k)} г${g>0?"":" на 100 г"}`));
-  }
-  if(est.note)h.append(document.createTextNode(` · ${est.note}`));
-}
-async function estimate(){
-  const name=$("fName").value.trim();
-  if(!name){showErr("Сначала напишите, что вы ели.");$("fName").focus();return}
-  showErr("");
-  const btn=$("estBtn");btn.disabled=true;btn.textContent="Считаю…";
-  const prompt=`Ты нутрициолог. Оцени пищевую ценность блюда или продукта по названию (русский язык).
-Блюдо: """${name.slice(0,120)}"""
-Ответь ТОЛЬКО JSON-объектом без пояснений:
-{"kcal_per_100g": число (ккал на 100 г готового продукта, как в типичных таблицах калорийности),
- "protein_per_100g": число (г), "fat_per_100g": число (г), "carbs_per_100g": число (г),
- "typical_portion_g": число (обычная порция в граммах),
- "has_veg_or_fruit": true или false (есть ли в блюде заметная порция овощей или фруктов),
- "note": строка до 60 символов на русском (что именно ты посчитал) }
-Если это не еда, верни {"kcal_per_100g": null, "note": "не похоже на еду"}.`;
-  try{
-    const r=await sample.json(prompt,{modelTier:"quick"});
-    const per=Number(r?.kcal_per_100g), typ=Number(r?.typical_portion_g);
-    const note=typeof r?.note==="string"?r.note.slice(0,60):"";
-    if(!(per>=0&&per<=950)){showErr(note?`Не получилось оценить: ${note}.`:"Не получилось оценить. Уточните название.");return}
-    const P=Number(r.protein_per_100g),F=Number(r.fat_per_100g),C=Number(r.carbs_per_100g);
-    const macrosOk=[P,F,C].every(v=>v>=0&&v<=100);
-    est={name,per100:Math.round(per),note,source:"ai"};
-    if(macrosOk)Object.assign(est,{p100:Math.round(P*10)/10,f100:Math.round(F*10)/10,c100:Math.round(C*10)/10});
-    if(r.has_veg_or_fruit===true)$("fVeg").checked=true;
-    if(!$("fGrams").value&&typ>0&&typ<=2000)$("fGrams").value=Math.round(typ);
-    applyEstimate();
-  }catch(e){
-    if(e?.code==="not_granted"){$("estRow").hidden=true;showErr("Расчёт калорий отключён: доступ не разрешён.")}
-    else if(e?.code==="rate_limited")showErr("Слишком много запросов, попробуйте через минуту.");
-    else if(e?.code!=="cancelled")showErr("Не получилось рассчитать. Попробуйте ещё раз или введите вручную.");
-  }finally{btn.disabled=false;btn.textContent="Рассчитать калории и БЖУ"}
-}
-
-/* ============ weight log ============ */
-function renderWeight(){
-  const list=[...weights].sort((a,b)=>a.date.localeCompare(b.date));
-  const info=$("weightInfo");info.innerHTML="";
-  const ep=effPlan(), res=ep&&ep.goal==="weight"?calcPlan(ep):null;
-  if(list.length){
-    const first=list[0], last=list[list.length-1];
-    const card=mk("div","card");
-    const dl=mk("dl","facts");
-    const fact=(k,v)=>{const d=mk("div");d.append(mk("dt",null,k),mk("dd",null,v));dl.append(d)};
-    fact("Сейчас",`${fmtN(last.kg,1)} кг`);
-    if(list.length>1){const d=last.kg-first.kg;fact(`С ${fmtShort.format(parse(first.date))}`,`${d>0?"+":d<0?"−":""}${fmtN(Math.abs(d),1)} кг`)}
-    if(ep&&ep.goal==="weight"){
-      fact("Цель",`${fmtN(ep.target,1)} кг`);
-      const left=ep.target-last.kg;
-      if(res&&!res.reached&&Math.abs(left)>=0.5)fact("Осталось",`${fmtN(Math.abs(left),1)} кг`);
-    }
-    card.append(dl);
-    if(res?.reached)card.append(mk("div","good","Цель достигнута! Программа переключилась на удержание веса. Можно поставить новую цель во вкладке «Программа»."));
-    else if(res&&!res.error&&ep.anchored)card.append(mk("p","small",`Норма пересчитана по весу от ${fmtShort.format(parse(ep.start))}: ${fmtN(res.kcal)} ккал в день, прогноз — ${fmtDate.format(parse(res.eta))}.`));
-    info.append(card);
-  }
-  $("weightChart").innerHTML=list.length>=2?weightChartSVG(list,ep&&ep.goal==="weight"?ep.target:null):"";
-  if(list.length===1)$("weightChart").append(mk("p","small","Добавьте ещё одно взвешивание, чтобы увидеть график."));
-  const ul=$("wList");ul.innerHTML="";
-  if(!list.length){ul.append(mk("p","empty","Записей веса пока нет."));return}
-  const desc=[...list].reverse();
-  desc.forEach((w,i)=>{
-    const prev=desc[i+1];
-    const li=mk("li");
-    li.append(mk("span","d",fmtDate.format(parse(w.date))),mk("span","kg",`${fmtN(w.kg,1)} кг`));
-    const d=prev?w.kg-prev.kg:null;
-    li.append(mk("span","dl",d==null?"":`${d>0?"+":d<0?"−":"±"}${fmtN(Math.abs(d),1)}`));
-    const armed=pendingWDelete===w.id;
-    const del=mk("button","del"+(armed?" confirm":""),armed?"Удалить?":"✕");del.type="button";
-    del.setAttribute("aria-label",armed?"Подтвердить удаление":`Удалить запись за ${fmtDate.format(parse(w.date))}`);
-    del.onclick=()=>armed?removeWeight(w.id):(pendingWDelete=w.id,renderWeight());
-    li.append(del);ul.append(li);
-  });
-}
-function weightChartSVG(list,target){
-  const W=400,H=220,L=44,R=12,Tp=14,B=28;
-  const pts=list.slice(-60);
-  const x0=parse(pts[0].date),span=Math.max(1,daysBetween(pts[0].date,pts[pts.length-1].date));
-  let lo=Math.min(...pts.map(p=>p.kg)),hi=Math.max(...pts.map(p=>p.kg));
-  if(isNum(target)){lo=Math.min(lo,target);hi=Math.max(hi,target)}
-  const padKg=Math.max(0.5,(hi-lo)*0.15);lo=Math.floor((lo-padKg)*2)/2;hi=Math.ceil((hi+padKg)*2)/2;
-  const X=d=>L+(daysBetween(pts[0].date,d)/span)*(W-L-R);
-  const Y=kg=>Tp+(hi-kg)/(hi-lo)*(H-Tp-B);
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="График веса">`;
-  const step=(hi-lo)/4;
-  for(let i=0;i<=4;i++){const v=lo+step*i,y=Y(v);s+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y}" y2="${y}"/><text x="${L-6}" y="${y+4}" text-anchor="end">${fmtN(v,1)}</text>`}
-  if(isNum(target)&&target>=lo&&target<=hi){const y=Y(target);s+=`<line class="target" x1="${L}" x2="${W-R}" y1="${y}" y2="${y}"/><text class="target-l" x="${W-R}" y="${y-6}" text-anchor="end">цель ${fmtN(target,1)}</text>`}
-  const line=pts.map(p=>`${X(p.date).toFixed(1)},${Y(p.kg).toFixed(1)}`).join(" ");
-  s+=`<polygon class="area" points="${X(pts[0].date)},${H-B} ${line} ${X(pts[pts.length-1].date)},${H-B}"/>`;
-  s+=`<polyline class="line" points="${line}"/>`;
-  pts.forEach((p,i)=>{s+=`<circle class="pt${i===pts.length-1?" last":""}" cx="${X(p.date)}" cy="${Y(p.kg)}" r="${i===pts.length-1?5:3.5}"><title>${fmtShort.format(parse(p.date))}: ${fmtN(p.kg,1)} кг</title></circle>`});
-  s+=`<text x="${L}" y="${H-8}">${fmtShort.format(parse(pts[0].date))}</text><text x="${W-R}" y="${H-8}" text-anchor="end">${fmtShort.format(parse(pts[pts.length-1].date))}</text>`;
-  return s+"</svg>";
-}
-async function saveWeight(ev){
-  ev.preventDefault();
-  const e=$("wErr");e.hidden=true;
-  const date=$("wDate").value, kg=Math.round(Number($("wKg").value.replace(",","."))*10)/10;
-  if(!date||date>today()){e.textContent="Выберите дату не позже сегодняшней.";e.hidden=false;return}
-  if(!(kg>=30&&kg<=300)){e.textContent="Вес: от 30 до 300 кг.";e.hidden=false;return}
-  $("wSave").disabled=true;
-  try{
-    if(weightsCol)await weightsCol.doc(date).set({date,kg});
-    else{weights=weights.filter(w=>w.date!==date).concat({id:date,date,kg});renderAll()}
-    $("wKg").value="";
-  }catch(err){e.textContent="Не удалось сохранить. Попробуйте ещё раз.";e.hidden=false}
-  finally{$("wSave").disabled=false}
-}
-async function removeWeight(id){
-  pendingWDelete=null;
-  if(weightsCol){try{await weightsCol.doc(id).delete()}catch(e){setStatus("Не удалось удалить")}}
-  else{weights=weights.filter(w=>w.id!==id);renderAll()}
-}
-
-/* ============ weekly stats ============ */
-function renderStats(){
-  const start=statsWeek,end=addDays(start,6);
-  $("wkTitle").textContent=`${fmtShort.format(parse(start))} — ${fmtShort.format(parse(end))}`;
-  $("wkNext").disabled=addDays(start,7)>today();
-  const body=$("statsBody");body.innerHTML="";
-  const days=[...Array(7)].map((_,i)=>{const d=addDays(start,i),ms=dayMeals(d);return {d,ms,kcal:sum(ms,m=>m.kcal),hasK:ms.some(m=>isNum(m.kcal))}});
-  const logged=days.filter(x=>x.ms.length);
-  const ep=effPlan(),res=ep?calcPlan(ep):null,norm=res&&!res.error?res.kcal:null;
-  if(!logged.length){body.append(mk("p","empty","За эту неделю записей нет."));return}
-  const kDays=days.filter(x=>x.hasK&&x.d!==today()); // сегодняшний день ещё не закончен
-  const avg=kDays.length?Math.round(sum(kDays,x=>x.kcal)/kDays.length):null;
-  // headline
-  const card=mk("div","card");
-  const big=mk("div","big");big.append(mk("b",null,avg!=null?fmtN(avg):"—"),mk("span",null,"ккал в среднем за день"+(norm?` · норма ${fmtN(norm)}`:"")+(days.some(x=>x.d===today())?" · без сегодняшнего дня":"")));
-  card.append(big);
-  if(norm&&avg!=null){
-    const diff=avg-norm,pct=Math.abs(diff)/norm;
-    card.append(mk("p","small",pct<=0.1?"В среднем неделя в пределах нормы — отдельные дни выше или ниже не страшны.":diff>0?`В среднем на ${fmtN(diff)} ккал в день выше нормы.`:`В среднем на ${fmtN(-diff)} ккал в день ниже нормы. Слишком большой недобор тоже не полезен — следите, чтобы еды хватало.`));
-  }
-  card.insertAdjacentHTML("beforeend",weekChartSVG(days,norm));
-  body.append(card);
-  // facts
-  const st=mk("dl","facts stats");
-  const fact=(k,v)=>{const d=mk("div");d.append(mk("dt",null,k),mk("dd",null,v));st.append(d)};
-  fact("Дней с записями",`${logged.length} из 7`);
-  fact("Приёмов пищи",`${sum(logged,x=>x.ms.length)}`);
-  const mDays=logged.filter(x=>x.ms.some(m=>isNum(m.protein)));
-  if(mDays.length){
-    const a=k=>Math.round(sum(mDays,x=>sum(x.ms,m=>m[k]))/mDays.length);
-    fact("Белки в среднем",`${a("protein")}${norm?` / ${res.protein}`:""} г`);
-    fact("Жиры в среднем",`${a("fat")}${norm?` / ${res.fat}`:""} г`);
-    fact("Углеводы в среднем",`${a("carbs")}${norm?` / ${res.carbs}`:""} г`);
-  }
-  const full=logged.filter(x=>MAIN.every(t=>x.ms.some(m=>m.type===t))).length;
-  fact("Дней с завтраком, обедом и ужином",`${full} из ${logged.length}`);
-  const vegAvg=sum(logged,x=>x.ms.filter(m=>m.veg).length)/logged.length;
-  fact("С овощами/фруктами",`${fmtN(vegAvg,1)} приёма в день`);
-  const wk=weights.filter(w=>w.date>=start&&w.date<=end).sort((a,b)=>a.date.localeCompare(b.date));
-  if(wk.length>=2){const d=wk[wk.length-1].kg-wk[0].kg;fact("Вес за неделю",`${d>0?"+":d<0?"−":"±"}${fmtN(Math.abs(d),1)} кг`)}
-  else if(wk.length===1)fact("Вес",`${fmtN(wk[0].kg,1)} кг`);
-  const c2=mk("div","card");c2.append(st);body.append(c2);
-}
-function weekChartSVG(days,norm){
-  const W=400,H=200,L=4,R=4,Tp=22,B=26,gap=8;
-  const max=Math.max(norm||0,...days.map(x=>x.kcal),100)*1.1;
-  const bw=(W-L-R-gap*6)/7;
-  const Y=v=>Tp+(1-v/max)*(H-Tp-B);
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Калории по дням недели">`;
-  days.forEach((x,i)=>{
-    const x0=L+i*(bw+gap);
-    const cls=!x.hasK?"none":norm&&x.kcal>norm*1.1?"over":"";
-    const h=x.hasK?Math.max(3,(H-Tp-B)-(Y(x.kcal)-Tp)):3;
-    s+=`<rect class="barr ${cls}" x="${x0}" y="${H-B-h}" width="${bw}" height="${h}" rx="4"><title>${fmtDay.format(parse(x.d))}: ${x.hasK?fmtN(x.kcal)+" ккал":"нет данных"}</title></rect>`;
-    if(x.hasK)s+=`<text class="val" x="${x0+bw/2}" y="${H-B-h-6}" text-anchor="middle">${fmtN(x.kcal)}</text>`;
-    s+=`<text x="${x0+bw/2}" y="${H-8}" text-anchor="middle">${fmtWd.format(parse(x.d))}</text>`;
-  });
-  if(norm){const y=Y(norm);s+=`<line class="target" x1="${L}" x2="${W-R}" y1="${y}" y2="${y}"/>`}
-  return s+"</svg>";
-}
-
-/* ============ plan UI ============ */
-function readPlanForm(){
-  const num=id=>{const v=$(id).value.trim();return v===""?NaN:Number(v.replace(",","."))};
-  const goal=document.querySelector('input[name="goal"]:checked').value;
-  const p={
-    goal,sex:document.querySelector('input[name="sex"]:checked').value,
-    age:num("pAge"),height:num("pHeight"),weight:num("pWeight"),
-    activity:Number($("pAct").value),start:today(),
-  };
-  p.target=goal==="weight"?num("pTarget"):p.weight;
-  p.deadline=goal==="weight"&&$("dlCustom").checked?($("pDeadline").value||null):null;
-  let err=null;
-  if(!(p.age>=1&&p.age<=110))err="Укажите возраст.";
-  else if(p.age<18)err="under18";
-  else if(!(p.height>=120&&p.height<=230))err="Рост: от 120 до 230 см.";
-  else if(!(p.weight>=30&&p.weight<=300))err="Вес: от 30 до 300 кг.";
-  else if(goal==="weight"&&!(p.target>=30&&p.target<=300))err="Желаемый вес: от 30 до 300 кг.";
-  else if(goal==="weight"&&$("dlCustom").checked&&!p.deadline)err="Выберите дату или включите автоматический срок.";
-  return {p,err};
-}
-function explain(p,r){
-  const box=document.createDocumentFragment();
-  const line=(text,cls)=>{box.append(mk("div",cls,text))};
-  if(r.error==="underweight"){line(`Вес ${fmtN(p.target,1)} кг при росте ${p.height} см — ниже нормы (ИМТ меньше 18,5). Программа не строит план ниже ${fmtN(r.minHealthy,1)} кг. Если есть причины стремиться к такому весу, обсудите это с врачом.`,"warn stop");return box}
-  if(r.error==="nofloor"){line(`При такой активности норма и так близка к минимуму (${r.floor} ккал), поэтому безопасно снижать калории не получится. Вместо этого можно добавить активность.`,"warn stop");return box}
-  if(r.error==="deadline"){line("До выбранной даты меньше недели: выберите срок позже.","warn stop");return box}
-  const mac=`Б ${r.protein} · Ж ${r.fat} · У ${r.carbs} г`;
-  if(r.goal==="keep"){
-    const extra=p.goal==="regular"?" Цель — завтрак, обед и ужин каждый день; дневник будет отмечать их.":p.goal==="veggies"?` Цель — овощи или фрукты минимум в ${VEG_TARGET} приёмах пищи за день.`:"";
-    line(`Норма для удержания веса: ${fmtN(r.kcal)} ккал в день · ${mac}.${extra}`);return box;
-  }
-  const verb=r.goal==="lose"?"снижения":"набора";
-  line(`Норма: ${fmtN(r.kcal)} ккал в день · ${mac} · темп ${fmtN(r.pace,2)} кг в неделю (${r.level.toLowerCase()})`);
-  line(`Автоматический срок: ${fmtDate.format(parse(r.autoDate))}, темп ${fmtN(r.autoPace,2)} кг/нед.`,"small");
-  if(p.deadline&&r.limited)line(`К ${fmtDate.format(parse(p.deadline))} нужен темп ${fmtN(r.neededPace,2)} кг/нед — это быстрее безопасного предела ${verb} (${fmtN(r.maxPace,2)} кг/нед для вас). Программа не будет урезать калории сильнее: план построен на пределе безопасного, цель — примерно к ${fmtDate.format(parse(r.eta))}.`,"warn");
-  else if(p.deadline&&r.pace>r.autoPace+0.01)line(`Выбранный срок короче автоматического, поэтому план строже: на ${fmtN(Math.round((r.pace-r.autoPace)*KCAL_PER_KG/7))} ккал в день ${r.goal==="gain"?"больше":"меньше"}, чем при автоматическом сроке. Это ещё в пределах безопасного.`,"small");
-  return box;
-}
-function updatePreview(){
-  const pv=$("planPreview");pv.innerHTML="";$("planErr").hidden=true;
-  const isW=$("gWeight").checked;
-  $("weightGoalFields").hidden=!isW;
-  $("dlWrap").hidden=!(isW&&$("dlCustom").checked);
-  const {p,err}=readPlanForm();
-  if(err==="under18"){pv.append(mk("div","warn stop","Формулы программы рассчитаны на взрослых. До 18 лет план питания лучше составлять вместе с врачом или диетологом."));return}
-  if(err)return;
-  pv.append(explain(p,calcPlan(p)));
-}
-function renderPlan(){
-  const card=$("planCard"),form=$("planForm");
-  const showForm=!plan||editingPlan;
-  form.hidden=!showForm;card.hidden=showForm;$("planCancel").hidden=!plan;
-  if(showForm){updatePreview();return}
-  const ep=effPlan(),r=calcPlan(ep);
-  card.innerHTML="";
-  card.append(mk("span","pill",GOALS[ep.goal]||GOALS.weight));
-  if(r.error)card.append(explain(ep,r));
-  else{
-    if(r.reached)card.append(mk("div","good","Цель по весу достигнута! Норма переключена на удержание. Можно поставить новую цель."));
-    const big=mk("div","big");big.append(mk("b",null,fmtN(r.kcal)),mk("span",null,"ккал в день"));
-    if(r.level)big.append(mk("span","pill"+(r.level==="Интенсивный"?" hard":""),r.level));
-    card.append(big);
-    const dl=mk("dl","facts");
-    const fact=(k,v)=>{const d=mk("div");d.append(mk("dt",null,k),mk("dd",null,v));dl.append(d)};
-    fact("Белки",`${r.protein} г`);fact("Жиры",`${r.fat} г`);fact("Углеводы",`${r.carbs} г`);
-    fact("Сейчас",`${fmtN(ep.weight,1)} кг`);
-    if(ep.goal==="weight")fact("Цель",`${fmtN(ep.target,1)} кг`);
-    if(r.goal!=="keep"){fact("Темп",`${fmtN(r.pace,2)} кг / нед`);fact("Прогноз",fmtDate.format(parse(r.eta)))}
-    fact("Обмен в покое",`${fmtN(Math.round(r.bmr))} ккал`);
-    fact("Расход за день",`${fmtN(Math.round(r.tdee))} ккал`);
-    card.append(dl);
-    if(ep.goal==="regular")card.append(mk("p","small","Цель: завтрак, обед и ужин каждый день. В дневнике видно, какие приёмы уже были, а во вкладке «Неделя» — сколько дней получилось полностью."));
-    if(ep.goal==="veggies")card.append(mk("p","small",`Цель: овощи или фрукты минимум в ${VEG_TARGET} приёмах пищи в день. Отмечайте галочку «Есть овощи или фрукты» — расчёт через ИИ ставит её сам.`));
-    if(ep.deadline&&r.limited)card.append(mk("div","warn",`Вы хотели прийти к цели к ${fmtDate.format(parse(ep.deadline))}, но это быстрее безопасного темпа. План построен на пределе безопасного.`));
-    if(ep.anchored)card.append(mk("p","small",`Норма пересчитана по последнему взвешиванию (${fmtDate.format(parse(ep.start))}). Программа создана ${fmtDate.format(parse(plan.start))}.`));
-    card.append(mk("p","small","Расчёт по формуле Миффлина — Сан Жеора. Это ориентир, а не медицинская рекомендация."));
-  }
-  const b=mk("div","btns");const ed=mk("button","ghost","Изменить данные");ed.type="button";
-  ed.onclick=()=>{editingPlan=true;fillPlanForm(effPlan());renderPlan()};
-  b.append(ed);card.append(b);
-}
-function fillPlanForm(p){
-  if(!p)return;
-  ($("g"+{weight:"Weight",keep:"Keep",regular:"Regular",veggies:"Veg"}[p.goal||"weight"])).checked=true;
-  (p.sex==="m"?$("sexM"):$("sexF")).checked=true;
-  $("pAge").value=p.age;$("pHeight").value=p.height;$("pWeight").value=p.weight;
-  $("pTarget").value=(p.goal||"weight")==="weight"?p.target:"";
-  $("pAct").value=String(p.activity);
-  if(p.deadline){$("dlCustom").checked=true;$("pDeadline").value=p.deadline}else $("dlAuto").checked=true;
-}
-async function savePlan(ev){
-  ev.preventDefault();
-  const {p,err}=readPlanForm();
-  const pe=$("planErr");
-  if(err){pe.textContent=err==="under18"?"Для младше 18 лет программа не строится.":err;pe.hidden=false;return}
-  const r=calcPlan(p);
-  if(r.error){pe.textContent="Поправьте данные: смотрите подсказку выше.";pe.hidden=false;return}
-  const d=p.target-p.weight;
-  const data={...p,dir:p.goal==="weight"&&Math.abs(d)>=0.5?Math.sign(d):0,savedAt:new Date().toISOString()};
-  $("planSave").disabled=true;
-  try{
-    if(profileRef){
-      await profileRef.set({plan:data});
-      await weightsCol.doc(p.start).set({date:p.start,kg:p.weight});
-    }else{
-      weights=weights.filter(w=>w.date!==p.start).concat({id:p.start,date:p.start,kg:p.weight});
-    }
-    plan=data;editingPlan=false;renderAll();
-  }catch(e){pe.textContent="Не удалось сохранить программу. Попробуйте ещё раз.";pe.hidden=false}
-  finally{$("planSave").disabled=false}
-}
-
-/* ============ wiring ============ */
-buildTypes();resetHint();
-ACT.forEach((a,i)=>{const o=mk("option",null,a.l);o.value=a.v;if(i===1)o.selected=true;$("pAct").append(o)});
-$("fTime").value=nowHM();
-$("wDate").value=today();$("wDate").max=today();
-$("pDeadline").min=addDays(today(),7);
-for(const k of ["diary","weight","stats","plan"])$("tab-"+k).onclick=()=>setTab(k);
-$("addForm").addEventListener("submit",addMeal);
-$("prev").onclick=()=>{selected=addDays(selected,-1);pendingDelete=null;renderDiary()};
-$("next").onclick=()=>{selected=addDays(selected,1);pendingDelete=null;renderDiary()};
-$("toToday").onclick=()=>{selected=today();pendingDelete=null;renderDiary()};
-$("estBtn").onclick=estimate;
-$("fGrams").addEventListener("input",()=>{if(est&&est.name===$("fName").value.trim())applyEstimate()});
-$("fName").addEventListener("input",()=>{if(est&&est.name!==$("fName").value.trim()){est=null;resetHint()}});
-$("weightForm").addEventListener("submit",saveWeight);
-$("wkPrev").onclick=()=>{statsWeek=addDays(statsWeek,-7);renderStats()};
-$("wkNext").onclick=()=>{statsWeek=addDays(statsWeek,7);renderStats()};
-$("planForm").addEventListener("input",updatePreview);
-$("planForm").addEventListener("change",updatePreview);
-$("planForm").addEventListener("submit",savePlan);
-$("planCancel").onclick=()=>{editingPlan=false;renderPlan()};
-const h=location.hash.slice(1);
-setTab(["diary","weight","stats","plan"].includes(h)?h:"diary");
-
-function lockForms(msg){
-  document.querySelectorAll("#addForm input,#addForm button,#weightForm input,#weightForm button,#planForm button[type=submit]").forEach(el=>el.disabled=true);
-  $("localNote").textContent=msg;$("localNote").hidden=false;
-}
-
-(async()=>{
-  try{sample=await window.claude?.use?.("sample")}catch(e){sample=null}
-  if(sample)$("estRow").hidden=false;
-})();
-
-(async()=>{
-  let user=null;
-  try{[db,user]=await Promise.all([window.claude?.use?.("db"),window.claude?.use?.("user")])}catch(e){}
-  if(!db){setStatus("Локальный режим");$("localNote").hidden=false;return}
-  const me=user?await user.me():null;
-  if(!me?.id){setStatus("Не выполнен вход");lockForms("Войдите в свой аккаунт Claude, чтобы вести дневник: записи привязаны к аккаунту и доступны на всех ваших устройствах.");return}
-  $("who").hidden=false;$("whoImg").src=me.avatarUrl;$("whoName").textContent=me.name||"Ваш аккаунт";
-  profileRef=db.doc(`data/users/${me.id}/profile`);
-  mealsCol=profileRef.collection("meals");
-  weightsCol=profileRef.collection("weights");
-  favCol=profileRef.collection("favorites");
-  const onErr=err=>{setStatus("Нет связи с хранилищем")};
-  profileRef.onSnapshot(s=>{plan=s.exists?(s.data().plan||null):null;if(!(currentTab==="plan"&&editingPlan))renderAll()},onErr);
-  weightsCol.orderBy("date","desc").limit(500).onSnapshot(s=>{weights=s.docs.map(d=>({id:d.id,...d.data()}));renderAll()},onErr);
-  favCol.limit(200).onSnapshot(s=>{favorites=s.docs.map(d=>({id:d.id,...d.data()}));if(currentTab==="diary")renderFavs();renderAll()},onErr);
-  mealsCol.orderBy("date","desc").limit(1000).onSnapshot(snap=>{
-    meals=snap.docs.map(d=>({id:d.id,...d.data()}));
-    setStatus(snap.metadata.fromCache?"Синхронизация…":"Сохранено в облаке");
-    renderAll();
-  },onErr);
-})();
-</script>
+<div class="backdrop" id="onboard" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="obTitle">
+    <div class="top">
+      <span class="small" id="obStep">Шаг 1 из 2</span>
+      <button type="button" class="x-close" id="obClose" aria-label="Пропустить">×</button>
+    </div>
+    <div id="ob1" class="obstep">
+      <svg class="appicon" aria-hidden="true" viewBox="0 0 64 64"> <rect width="64" height="64" rx="15" fill="#1D4A30"/> <path d="M17 33 A15 13 0 0 1 47 33 Z" fill="#E8A949"/> <path d="M35 23.5 C38 17.5 44 16 48.5 17.5 C47 23 41 26 35 23.5 Z" fill="#BFDDC6"/> <path d="M35 23.5 C39 21.5 43 20 46 18.5" fill="none" stroke="#1D4A30" stroke-width="1.2" stroke-linecap="round"/> <path d="M11 32 H53 C53 45 44 51.5 32 51.5 C20 51.5 11 45 11 32 Z" fill="#F4F6F1"/> <rect x="25" y="50.5" width="14" height="4" rx="2" fill="#F4F6F1"/> <g stroke="#1D4A30" stroke-width="2.2" stroke-linecap="round"> <path d="M17 37.5 H23"/><path d="M18.5 42 H22.5"/><path d="M21 46.5 H25"/> </g> </svg>
+      <h2 id="obTitle">Добро пожаловать в Порцию</h2>
+      <ul class="benefits">
+        <li><div><b>Записывайте еду как удобно</b><span>Вручную, по названию или по фото — калории и БЖУ посчитает ИИ.</span></div></li>
+        <li><div><b>Поставьте цель</b><span>Норма калорий и безопасный темп — под вас.</span></div></li>
+        <li><div><b>Смотрите прогресс</b><span>Итоги недели, график веса и напоминания о приёмах пищи.</span></div></li>
+      </ul>
+      <button type="button" class="submit" id="obNext">Дальше</button>
+    </div>
+    <div id="ob2" class="obstep" hidden>
+      <h2>Какая у вас цель?</h2>
+      <fieldset class="seg obgoals" aria-label="Цель">
+        <label><input type="radio" name="obgoal" value="weight"><span>Изменить вес</span></label>
+        <label><input type="radio" name="obgoal" value="keep"><span>Удерживать вес</span></label>
+        <label><input type="radio" name="obgoal" value="regular"><span>Питаться регулярно</span></label>
+        <label><input type="radio" name="obgoal" value="veggies"><span>Больше овощей и фруктов</span></label>
+        <label><input type="radio" name="obgoal" value="none" checked><span>Пока просто вести дневник</span></label>
+      </fieldset>
+      <p class="small">Цель можно поменять в любой момент во вкладке «Профиль».</p>
+      <button type="button" class="submit" id="obDone">Начать</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

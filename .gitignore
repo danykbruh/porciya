@@ -1,0 +1,13 @@
+# Зависимости
+node_modules/
+
+# Секреты: никогда не коммитим
+.env
+.env.*
+!.env.example
+
+# Мусор операционных систем и редакторов
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
