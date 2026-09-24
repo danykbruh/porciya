@@ -9,17 +9,47 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="stylesheet" href="css/styles.css">
+<!-- Библиотека Supabase. TODO: закрепить точную версию (сейчас последняя 2.x) и добавить integrity-хеш -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+<script src="js/config.js" defer></script>
 <script src="js/app.js" defer></script>
+<script src="js/cloud.js" defer></script>
 </head>
-<body>
+<body class="signed-out">
 <div class="wrap">
   <header>
     <h1 style="display:flex;align-items:center;gap:10px"><svg class="logo" viewBox="8 12 48 46" aria-hidden="true"><path class="lg-food" d="M17 33 A15 13 0 0 1 47 33 Z"/><path class="lg-leaf" d="M35 23.5 C38 17.5 44 16 48.5 17.5 C47 23 41 26 35 23.5 Z"/><path class="lg-bowl" d="M11 32 H53 C53 45 44 51.5 32 51.5 C20 51.5 11 45 11 32 Z"/><rect class="lg-bowl" x="25" y="50.5" width="14" height="4" rx="2"/><g class="lg-ticks"><path d="M17 37.5 H23"/><path d="M18.5 42 H22.5"/><path d="M21 46.5 H25"/></g></svg>Порция <span class="plusbadge" id="plusBadge" hidden>Плюс</span></h1>
     <div class="acct">
       <span class="who" id="who" hidden><img id="whoImg" alt=""><span id="whoName"></span></span>
-      <span class="status" id="status">Подключаюсь…</span>
+      <span class="status" id="status"></span>
+      <button type="button" class="pluslink" id="logoutBtn" hidden>Выйти</button>
     </div>
   </header>
+
+  <section id="authView" class="card authcard" aria-labelledby="authTitle">
+    <h2 id="authTitle">Порция</h2>
+    <p class="small" id="authLead">Подключаюсь…</p>
+    <form id="authForm" novalidate hidden>
+      <fieldset class="seg" id="authModeSeg" aria-label="Вход или регистрация">
+        <label><input type="radio" name="authmode" id="amLogin" value="login" checked><span>Вход</span></label>
+        <label><input type="radio" name="authmode" id="amSignup" value="signup"><span>Регистрация</span></label>
+      </fieldset>
+      <div class="field" id="afEmailWrap"><label for="afEmail">Почта</label><input id="afEmail" type="email" autocomplete="email" inputmode="email" maxlength="254"></div>
+      <div class="field" id="afPassWrap"><label for="afPass" id="afPassLabel">Пароль</label><input id="afPass" type="password" autocomplete="current-password" maxlength="72"></div>
+      <label class="check consent" id="afConsentWrap" hidden><input type="checkbox" id="afConsent"> <span>Я даю согласие на обработку моих данных о питании и весе для работы приложения.</span></label>
+      <button type="button" class="pluslink" id="afPolicy">Политика конфиденциальности</button>
+      <div id="afPolicyBox" class="afpolicy" hidden></div>
+      <p class="err" id="afErr" hidden></p>
+      <p class="good" id="afOk" hidden></p>
+      <div class="btns">
+        <button class="submit" id="afSubmit" type="submit">Войти</button>
+        <button type="button" class="pluslink" id="afForgot">Забыли пароль?</button>
+        <button type="button" class="pluslink" id="afBack" hidden>Назад ко входу</button>
+        <button type="button" class="pluslink" id="afResend" hidden>Отправить письмо ещё раз</button>
+        <button type="button" class="pluslink" id="afLogout" hidden>Выйти</button>
+      </div>
+    </form>
+  </section>
 
   <p class="note" id="localNote" hidden>Облачное хранилище недоступно в этом просмотре, записи живут только до перезагрузки страницы.</p>
 
@@ -57,7 +87,7 @@
       <div class="habit" id="habitBox" hidden></div>
     </div>
 
-    <details class="card cook" id="cook">
+    <details class="card cook" id="cook" hidden>
       <summary>Что приготовить из того, что есть дома?</summary>
       <div class="cookbody">
         <p class="small" id="cookTarget"></p>
@@ -183,7 +213,7 @@
       <hr class="sep">
       <div class="danger">
         <b>Удалить все мои данные</b>
-        <p class="small">Навсегда удалит все приёмы пищи, взвешивания, избранное, программу и настройки. Аккаунт Claude при этом не удаляется. Отменить нельзя — если данные нужны, сначала скачайте их.</p>
+        <p class="small">Навсегда удалит все приёмы пищи, взвешивания, избранное, программу и настройки. Аккаунт Порции удалится вместе со всеми данными. Отменить нельзя — если данные нужны, сначала скачайте их.</p>
         <div class="btns"><button type="button" class="dangerbtn" id="delStart">Удалить все данные…</button></div>
         <div id="delConfirm" class="delconfirm" hidden>
           <div class="field"><label for="delWord">Чтобы подтвердить, введите слово УДАЛИТЬ</label><input id="delWord" autocomplete="off"></div>
@@ -207,12 +237,12 @@
         </ul>
         <h3>Где и кто видит</h3>
         <ul>
-          <li>Данные хранятся в защищённом хранилище Claude и привязаны к вашему аккаунту. Каждый пользователь видит только свою папку — даже автор приложения не может открыть чужие записи.</li>
+          <li>Данные хранятся в базе данных Supabase на серверах в Европейском союзе (Франкфурт) и привязаны к вашему аккаунту. Правила доступа в самой базе не дают другим пользователям увидеть ваши записи. Доступ к базе целиком есть только у разработчика приложения — для обслуживания и исправления ошибок.</li>
           <li>Выбранная тема, список продуктов «что есть дома» и счётчик бесплатных ИИ-запросов хранятся только в вашем браузере.</li>
         </ul>
         <h3>ИИ и фото</h3>
         <ul>
-          <li>Когда вы нажимаете «Рассчитать», «Распознать по фото» или «Подобрать блюдо», название блюда, фото или список продуктов отправляются Claude для ответа.</li>
+          <li>Когда вы нажимаете «Рассчитать», «Распознать по фото» или «Подобрать блюдо», название блюда, фото или список продуктов отправляются сервису искусственного интеллекта для ответа. В этой версии ИИ-функции пока отключены.</li>
           <li>Фото приложение не сохраняет: после распознавания остаются только название блюда, вес и калории.</li>
           <li>Запросы к ИИ отправляются только по вашему нажатию, никогда автоматически.</li>
         </ul>

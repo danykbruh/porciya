@@ -801,7 +801,7 @@ async function cook(){
   const err=$("cookErr");err.hidden=true;
   const items=$("cookItems").value.trim();
   if(!items){err.textContent="Перечислите хотя бы пару продуктов.";err.hidden=false;return}
-  if(!sample){err.textContent="Подбор блюд работает только в приложении Claude.";err.hidden=false;return}
+  if(!sample){err.textContent="Подбор блюд временно недоступен: ИИ ещё не подключён к серверу Порции.";err.hidden=false;return}
   if(!canUseAI()){openPaywall(`Бесплатно доступно ${FREE_AI} ИИ-запроса в день, включая подбор блюд. В Порции Плюс — без ограничений.`);return}
   try{localStorage.setItem(COOK_KEY,items)}catch(e){}
   const tg=cookTarget();
@@ -1020,8 +1020,16 @@ async function exportCSV(kind){
     try{await dl.save({filename,data});msg.textContent="Готово.";return}
     catch(e){if(e?.code==="declined"){msg.textContent="Скачивание отменено.";return}}
   }
-  fb.value=data.replace(/^\uFEFF/,"");fb.hidden=false;fb.focus();fb.select();
-  msg.textContent="Скачивание недоступно здесь — скопируйте текст ниже и сохраните как файл .csv.";
+  // Обычный сайт: скачиваем файл напрямую
+  try{
+    const url=URL.createObjectURL(new Blob([data],{type:"text/csv;charset=utf-8"}));
+    const link=document.createElement("a");link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    msg.textContent="Файл скачан.";
+  }catch(e){
+    fb.value=data.replace(/^\uFEFF/,"");fb.hidden=false;fb.focus();fb.select();
+    msg.textContent="Скачивание недоступно — скопируйте текст ниже и сохраните как файл .csv.";
+  }
 }
 $("expMeals").onclick=()=>exportCSV("meals");
 $("expWeights").onclick=()=>exportCSV("weights");
@@ -1032,26 +1040,15 @@ $("delCancel").onclick=()=>{$("delConfirm").hidden=true;$("delStart").focus()};
 $("delWord").addEventListener("input",()=>{$("delGo").disabled=$("delWord").value.trim().toUpperCase()!=="УДАЛИТЬ"});
 $("delGo").onclick=async()=>{
   const msg=$("delMsg");$("delGo").disabled=true;$("delCancel").disabled=true;
-  const refs=[];
-  if(mealsCol){
-    meals.forEach(m=>refs.push(mealsCol.doc(m.id)));
-    weights.forEach(w=>refs.push(weightsCol.doc(w.id)));
-    favorites.forEach(f=>refs.push(favCol.doc(f.id)));
-    if(settingsRef)refs.push(settingsRef);
-    refs.push(profileRef);
-  }
-  let done=0,failed=0;
-  for(const ref of refs){
-    try{await ref.delete()}
-    catch(e){await new Promise(r=>setTimeout(r,800+Math.random()*400));try{await ref.delete()}catch(e2){failed++}}
-    done++;if(done%10===0||done===refs.length)msg.textContent=`Удаляю… ${done} из ${refs.length}`;
-  }
+  msg.textContent="Удаляю…";
   try{for(const k of [PLUS_KEY,AI_KEY,COOK_KEY,THEME_KEY])localStorage.removeItem(k)}catch(e){}
-  if(!mealsCol){meals=[];weights=[];favorites=[];plan=null}
-  applyTheme("system");$("thSystem").checked=true;
-  $("delConfirm").hidden=true;$("delCancel").disabled=false;
-  msg.textContent=failed?`Удалено ${done-failed} из ${refs.length}. Часть записей удалить не удалось — попробуйте ещё раз.`:"Все данные удалены.";
-  renderPlusState();renderAll();
+  applyTheme("system");$("thSystem").checked=true;renderPlusState();
+  try{
+    if(window.porciyaCloud)await window.porciyaCloud.deleteAccount();
+    else{meals=[];weights=[];favorites=[];plan=null;renderAll()}
+    msg.textContent="Все данные удалены.";
+  }catch(e){msg.textContent="Не удалось удалить аккаунт. Проверьте интернет и попробуйте ещё раз."}
+  finally{$("delConfirm").hidden=true;$("delCancel").disabled=false}
 };
 
 /* ============ privacy link ============ */
@@ -1119,6 +1116,7 @@ function lockForms(msg){
 (async()=>{
   try{sample=await window.claude?.use?.("sample")}catch(e){sample=null}
   if(!sample)return;
+  $("cook").hidden=false;
   $("estRow").hidden=false;
   // Кнопку показываем всегда; если фото в этом просмотре недоступны, объясняем при нажатии.
   $("photoBtn").hidden=false;
@@ -1128,33 +1126,4 @@ function lockForms(msg){
   if(caps?.images?.mediaTypes?.length)$("fPhoto").accept=caps.images.mediaTypes.join(",");
 })();
 
-(async()=>{
-  let user=null;
-  try{[db,user]=await Promise.all([window.claude?.use?.("db"),window.claude?.use?.("user")])}catch(e){}
-  if(!db){setStatus("Локальный режим");$("localNote").hidden=false;return}
-  const me=user?await user.me():null;
-  if(!me?.id){setStatus("Не выполнен вход");lockForms("Войдите в свой аккаунт Claude, чтобы вести дневник: записи привязаны к аккаунту и доступны на всех ваших устройствах.");return}
-  $("who").hidden=false;$("whoImg").src=me.avatarUrl;$("whoName").textContent=me.name||"Ваш аккаунт";
-  profileRef=db.doc(`data/users/${me.id}/profile`);
-  mealsCol=profileRef.collection("meals");
-  weightsCol=profileRef.collection("weights");
-  favCol=profileRef.collection("favorites");
-  settingsRef=db.doc(`data/users/${me.id}/settings`);
-  settingsRef.onSnapshot(s=>{
-    const d=s.exists?s.data():{};
-    settings={reminders:{...structuredClone(REM_DEFAULT),...(d.reminders||{}),times:{...REM_DEFAULT.times,...(d.reminders?.times||{})}},skipped:d.skipped||{date:"",types:[]},onboarded:!!d.onboarded};
-    if(!s.metadata?.fromCache){loaded.settings=true;maybeOnboard()}
-    fillRemForm();renderNudges();
-  },()=>{});
-  const onErr=err=>{setStatus("Нет связи с хранилищем")};
-  profileRef.onSnapshot(s=>{plan=s.exists?(s.data().plan||null):null;if(!(currentTab==="plan"&&editingPlan))renderAll();if(!s.metadata?.fromCache){loaded.profile=true;maybeOnboard()}},onErr);
-  weightsCol.orderBy("date","desc").limit(500).onSnapshot(s=>{weights=s.docs.map(d=>({id:d.id,...d.data()}));renderAll()},onErr);
-  favCol.limit(200).onSnapshot(s=>{favorites=s.docs.map(d=>({id:d.id,...d.data()}));if(currentTab==="diary")renderFavs();renderAll()},onErr);
-  mealsCol.orderBy("date","desc").limit(1000).onSnapshot(snap=>{
-    meals=snap.docs.map(d=>({id:d.id,...d.data()}));
-    setStatus(snap.metadata.fromCache?"Синхронизация…":"Сохранено в облаке");
-    if(editingMeal&&!meals.some(m=>m.id===editingMeal))editingMeal=null;
-    renderAll();
-    if(!snap.metadata.fromCache){loaded.meals=true;maybeOnboard()}
-  },onErr);
-})();
+// Хранение данных и вход — в js/cloud.js (Supabase).
