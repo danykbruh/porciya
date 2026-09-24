@@ -8,9 +8,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1D4A30">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Порция">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="css/styles.css">
 <!-- Библиотека Supabase. TODO: закрепить точную версию (сейчас последняя 2.x) и добавить integrity-хеш -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous" defer></script>
 <script src="js/config.js" defer></script>
 <script src="js/app.js" defer></script>
 <script src="js/cloud.js" defer></script>
@@ -201,6 +207,12 @@
       <p class="small" id="remSaved" aria-live="polite"></p>
     </form>
 
+    <section class="card" id="installBox" aria-labelledby="installTitle" hidden>
+      <h2 id="installTitle">Порция на телефоне</h2>
+      <p class="small" id="installHint"></p>
+      <div class="btns"><button type="button" class="submit" id="installBtn" hidden>Установить приложение</button></div>
+    </section>
+
     <section class="card" aria-labelledby="dataTitle">
       <h2 id="dataTitle">Мои данные</h2>
       <p class="small">Скачайте дневник и журнал веса в CSV — файл открывается в Excel, Google Таблицах или Numbers, его можно показать врачу или диетологу.</p>
@@ -239,6 +251,7 @@
         <ul>
           <li>Данные хранятся в базе данных Supabase на серверах в Европейском союзе (Франкфурт) и привязаны к вашему аккаунту. Правила доступа в самой базе не дают другим пользователям увидеть ваши записи. Доступ к базе целиком есть только у разработчика приложения — для обслуживания и исправления ошибок.</li>
           <li>Выбранная тема, список продуктов «что есть дома» и счётчик бесплатных ИИ-запросов хранятся только в вашем браузере.</li>
+          <li>Чтобы Порция открывалась без интернета, копия ваших записей сохраняется на этом устройстве. При выходе из аккаунта она удаляется.</li>
         </ul>
         <h3>ИИ и фото</h3>
         <ul>

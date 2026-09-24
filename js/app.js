@@ -315,7 +315,7 @@ async function addMeal(ev){
     else{meals.push({id:"local-"+Date.now(),...meal});renderAll()}
     $("fName").value="";$("fKcal").value="";$("fGrams").value="";$("fVeg").checked=false;$("fTime").value=nowHM();clearThumb();
     est=null;resetHint();$("fName").focus();
-  }catch(e){showErr(e?.code==="quota_exceeded"?"Хранилище заполнено: удалите старые записи.":"Не удалось сохранить. Попробуйте ещё раз.")}
+  }catch(e){showErr(!navigator.onLine?"Нет интернета: запись не сохранена. Добавьте её, когда появится связь.":"Не удалось сохранить. Попробуйте ещё раз.")}
   finally{$("submitBtn").disabled=false}
 }
 async function removeMeal(id){
@@ -1127,3 +1127,29 @@ function lockForms(msg){
 })();
 
 // Хранение данных и вход — в js/cloud.js (Supabase).
+
+/* ============ PWA: установка на телефон и работа без интернета ============ */
+if("serviceWorker" in navigator&&location.protocol!=="file:"){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+let installPrompt=null;
+const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+function renderInstall(){
+  const box=$("installBox");if(!box)return;
+  if(isStandalone()){box.hidden=true;return}
+  box.hidden=false;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  $("installBtn").hidden=!installPrompt;
+  $("installHint").textContent=installPrompt?"Порция откроется как отдельное приложение со своей иконкой.":
+    ios?"На iPhone: откройте сайт в Safari → кнопка «Поделиться» → «На экран „Домой“».":
+    "В браузере откройте меню (⋮) → «Установить приложение» или «Добавить на главный экран».";
+}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;renderInstall()});
+window.addEventListener("appinstalled",()=>{installPrompt=null;renderInstall()});
+$("installBtn")?.addEventListener("click",async()=>{
+  if(!installPrompt)return;
+  installPrompt.prompt();
+  try{await installPrompt.userChoice}catch(e){}
+  installPrompt=null;renderInstall();
+});
+renderInstall();

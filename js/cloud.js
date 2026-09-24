@@ -116,7 +116,37 @@
     };
   }
 
+  // ---------- Копия данных на устройстве, чтобы приложение открывалось без интернета ----------
+  const CACHE_PREFIX = "porciya-cache-";
+  function saveCache(snap) { try { localStorage.setItem(CACHE_PREFIX + uid, JSON.stringify(snap)); } catch (e) {} }
+  function readCache() { try { return JSON.parse(localStorage.getItem(CACHE_PREFIX + uid) || "null"); } catch (e) { return null; } }
+  function clearAllCaches() {
+    try { Object.keys(localStorage).filter((k) => k.startsWith(CACHE_PREFIX)).forEach((k) => localStorage.removeItem(k)); } catch (e) {}
+  }
+  function applySnapshot(snap) {
+    meals = snap.meals.map(fromRow);
+    weights = snap.weights.map((r) => ({ id: r.date, date: r.date, kg: Number(r.kg) }));
+    favorites = snap.favorites.map(fromRow);
+    plan = snap.profile?.plan || null;
+    applySettings(snap.profile?.settings || {});
+  }
+  let offlineMode = false;
+
   async function loadAll() {
+    if (loadingAll) return loadingAll;
+    try { const r = await loadAllOnline(); offlineMode = false; return r; }
+    catch (e) {
+      const snap = readCache();
+      if (!snap) throw e;
+      applySnapshot(snap);
+      offlineMode = true;
+      loaded.meals = loaded.settings = loaded.profile = true;
+      const t = new Date(snap.at);
+      setStatus(`Нет связи · данные от ${String(t.getHours()).padStart(2,"0")}:${String(t.getMinutes()).padStart(2,"0")}`);
+      return snap.profile;
+    }
+  }
+  async function loadAllOnline() {
     if (loadingAll) return loadingAll;
     loadingAll = (async () => {
       const [m, w, f, p] = await Promise.all([
@@ -126,11 +156,9 @@
         sb.from("profiles").select("plan,settings,health_consent_at").maybeSingle(),
       ]);
       for (const r of [m, w, f, p]) if (r.error) throw r.error;
-      meals = m.data.map(fromRow);
-      weights = w.data.map((r) => ({ id: r.date, date: r.date, kg: Number(r.kg) }));
-      favorites = f.data.map(fromRow);
-      plan = p.data?.plan || null;
-      applySettings(p.data?.settings || {});
+      const snap = { meals: m.data, weights: w.data, favorites: f.data, profile: p.data, at: Date.now() };
+      applySnapshot(snap);
+      saveCache(snap);
       if (editingMeal && !meals.some((x) => x.id === editingMeal)) editingMeal = null;
       loaded.meals = loaded.settings = loaded.profile = true;
       lastLoad = Date.now();
@@ -191,7 +219,7 @@
     const user = session?.user || null;
     if (mode === "newpass") return; // пользователь задаёт новый пароль
     if (!user) {
-      currentUser = null; uid = null; clearStores();
+      currentUser = null; uid = null; clearStores(); clearAllCaches();
       $("who").hidden = true; $("logoutBtn").hidden = true;
       setStatus("");
       if (mode === "loading" || $("authView").hidden) showAuth("login");
@@ -230,6 +258,8 @@
   // Синхронизация, если данные поменялись на другом устройстве
   function syncSoon() { if (uid && Date.now() - lastLoad > 20000) refresh().catch(() => {}); }
   window.addEventListener("focus", syncSoon);
+  window.addEventListener("online", () => { if (uid) { lastLoad = 0; refresh().catch(() => {}); } });
+  window.addEventListener("offline", () => { if (uid) setStatus("Нет интернета"); });
   document.addEventListener("visibilitychange", () => { if (!document.hidden) syncSoon(); });
 
   // ---------- Обработчики формы ----------
