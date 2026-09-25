@@ -7,10 +7,16 @@ import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const MAIN = ["breakfast", "lunch", "dinner"] as const;
+// Заголовок — сразу понятно, о каком приёме пищи речь (на iPhone он показывается над текстом)
+const TITLE: Record<string, string> = {
+  breakfast: "🍳 Завтрак",
+  lunch: "🍲 Обед",
+  dinner: "🍽 Ужин",
+};
 const TEXT: Record<string, string> = {
-  breakfast: "Пора позавтракать? Завтрак сегодня ещё не записан.",
-  lunch: "Время обеда — обед ещё не записан.",
-  dinner: "Время ужина — ужин ещё не записан.",
+  breakfast: "Пора позавтракать? Не забудьте записать, что съели.",
+  lunch: "Время обеда — запишите, что съели.",
+  dinner: "Время ужина — запишите, что съели.",
 };
 const DEFAULT_TIMES: Record<string, string> = { breakfast: "10:00", lunch: "14:00", dinner: "20:00" };
 const WINDOW_MIN = 180; // напоминаем в течение 3 часов после назначенного времени, не позже
@@ -81,7 +87,7 @@ Deno.serve(async (req) => {
       // Сначала отмечаем в журнале: если запись уже есть — значит, другой запуск успел отправить
       const { error: logErr } = await db.from("push_log").insert({ user_id: p.user_id, day, type });
       if (logErr) continue;
-      const payload = JSON.stringify({ title: "Порция", body: TEXT[type], tag: `meal-${type}-${day}`, url: "./" });
+      const payload = JSON.stringify({ title: TITLE[type], body: TEXT[type], tag: `meal-${type}-${day}`, url: "./" });
       for (const s of userSubs) {
         try {
           await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 3600 });
