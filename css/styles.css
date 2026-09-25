@@ -301,3 +301,5 @@ body.signed-out .acct{display:none}
 .scmanual{display:flex;gap:8px;align-items:flex-end}
 .scmanual .field{flex:1}
 .sheet a{color:var(--accent)}
+.sclabel{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding-top:4px;border-top:1px solid var(--line)}
+.sclabel p{margin:0}

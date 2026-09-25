@@ -59,6 +59,17 @@ ${typed ? `Пользователь подписал блюдо так: """${typ
  "confidence": "high" | "medium" | "low"}
 Если на фото нет еды, верни {"items": [], "title": "не похоже на еду"}.` };
   }
+  if (task === "label") {
+    const image = typeof b.image === "string" ? b.image : "";
+    if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(image) || image.length > MAX_IMAGE_CHARS) return { error: "bad_image" };
+    return { image, prompt: `На фото — упаковка продукта. Найди таблицу «Пищевая ценность» / «Энергетическая ценность» и перепиши значения НА 100 г (или 100 мл).
+Если на упаковке указаны значения только на порцию и указан вес порции — пересчитай на 100 г. Ничего не выдумывай: если значение не видно, ставь null.
+Ответь ТОЛЬКО JSON-объектом без пояснений:
+{"found": true или false (видна ли таблица пищевой ценности),
+ "name": "название продукта на русском, если видно на упаковке, иначе пустая строка (до 60 символов)",
+ "kcal_per_100g": число или null, "protein_per_100g": число или null, "fat_per_100g": число или null, "carbs_per_100g": число или null,
+ "package_g": число или null (масса нетто упаковки в граммах, если видна)}` };
+  }
   if (task === "cook") {
     const items = str(b.items, 600);
     if (!items) return { error: "empty" };

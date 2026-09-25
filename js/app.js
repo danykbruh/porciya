@@ -568,10 +568,34 @@ async function findBarcode(raw){
     useFood({...r,portion_g:null},"barcode",`по штрихкоду${r.quantity?` · упаковка ${r.quantity}`:""} · Open Food Facts`);
   }catch(e){
     const c=e?.code;
-    err.textContent=c==="not_found"?"Такого товара нет в открытой базе. Введите вручную или сфотографируйте блюдо.":c==="offline"?"Нет интернета. Попробуйте позже.":"Не получилось найти товар. Попробуйте ещё раз.";
+    err.textContent=c==="not_found"?"Такого товара нет в открытой базе. Сфотографируйте этикетку ниже — ИИ прочитает калорийность.":c==="offline"?"Нет интернета. Попробуйте позже.":"Не получилось найти товар. Попробуйте ещё раз.";
     err.hidden=false;$("scHint").textContent="Можно попробовать другой товар или ввести цифры вручную.";
   }finally{scanBusy=false}
 }
+// Фото этикетки: ИИ читает таблицу «Пищевая ценность» (входит в дневной лимит ИИ)
+async function readLabel(file){
+  const err=$("scErr");err.hidden=true;
+  if(!canUseAI()){await closeScanner();openPaywall(`Бесплатно доступно ${FREE_AI} ИИ-запроса в день, включая фото этикетки. В Порции Плюс — без ограничений.`);return}
+  const lb=$("labelBtn");lb.classList.add("busy");scanBusy=true;
+  $("scHint").textContent="Читаю этикетку… это может занять до минуты.";
+  try{
+    const image=await shrinkImage(file,1600);
+    const r=await window.porciyaAI("label",{image});
+    const num=v=>{const x=Number(v);return v!=null&&Number.isFinite(x)&&x>=0?x:null};
+    const k=num(r?.kcal_per_100g);
+    if(r?.found===false||k==null||k>950){err.textContent="Не получилось прочитать таблицу пищевой ценности. Снимите её ближе и при хорошем свете.";err.hidden=false;return}
+    const r1=v=>v==null||v>100?null:Math.round(v*10)/10;
+    const name=(typeof r.name==="string"&&r.name.trim())||$("fName").value.trim()||"Продукт";
+    countAI();await closeScanner();
+    useFood({name,kcal100:Math.round(k),p100:r1(num(r.protein_per_100g)),f100:r1(num(r.fat_per_100g)),c100:r1(num(r.carbs_per_100g)),portion_g:null},"barcode",
+      `по фото этикетки${num(r.package_g)?` · упаковка ${Math.round(r.package_g)} г`:""} · проверьте цифры`);
+  }catch(e){
+    const c=e?.code;
+    err.textContent=c==="daily_limit"?"Лимит ИИ-запросов на сегодня исчерпан — введите калории с этикетки вручную.":c==="image_rejected"?"Не получилось открыть это фото. Попробуйте ещё раз.":"Не получилось прочитать этикетку. Попробуйте ещё раз.";
+    err.hidden=false;
+  }finally{lb.classList.remove("busy");scanBusy=false;if(!$("scanner").hidden)$("scHint").textContent="Можно попробовать ещё раз или ввести калории вручную."}
+}
+$("fLabel").addEventListener("change",()=>{const f=$("fLabel").files[0];$("fLabel").value="";if(f)readLabel(f)});
 $("scanBtn").onclick=openScanner;
 $("scClose").onclick=closeScanner;
 $("scanner").addEventListener("click",e=>{if(e.target===$("scanner"))closeScanner()});
