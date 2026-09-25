@@ -361,7 +361,7 @@ async function removeFav(id){
   else{favorites=favorites.filter(f=>f.id!==id);renderDiary()}
 }
 
-/* ============ calorie & macro estimate (Claude via "sample") ============ */
+/* ============ calorie & macro estimate (ИИ через серверную функцию) ============ */
 const CONF={high:"высокая",medium:"средняя",low:"низкая"};
 const HINT_DEFAULT="По названию и весу. Без веса возьмём обычную порцию.";
 function resetHint(){$("estHint").textContent=HINT_DEFAULT+(isPlus()?"":" "+aiLeftText())}
@@ -388,19 +388,8 @@ async function estimate(){
   if(!name){showErr("Сначала напишите, что вы ели.");$("fName").focus();return}
   showErr("");
   const btn=$("estBtn");btn.disabled=true;btn.textContent="Считаю…";
-  const prompt=`Ты нутрициолог. Оцени пищевую ценность блюда или продукта по названию (русский язык).
-Блюдо: """${name.slice(0,120)}"""
-Ответь ТОЛЬКО JSON-объектом без пояснений:
-{"kcal_per_100g": число (ккал на 100 г готового продукта, как в типичных таблицах калорийности),
- "protein_per_100g": число (г), "fat_per_100g": число (г), "carbs_per_100g": число (г),
- "typical_portion_g": число (обычная порция в граммах),
- "has_veg_or_fruit": true или false (есть ли в блюде заметная порция овощей или фруктов),
- "uncertainty_pct": число от 5 до 60 (насколько может ошибаться оценка калорий в процентах: 5–15 для однозначных продуктов вроде «банан», 20–40 для блюд, где рецепт сильно варьируется, 40–60 для расплывчатых названий),
- "confidence": "high" | "medium" | "low",
- "note": строка до 60 символов на русском (что именно ты посчитал) }
-Если это не еда, верни {"kcal_per_100g": null, "note": "не похоже на еду"}.`;
   try{
-    const r=await sample.json(prompt,{modelTier:"quick"});
+    const r=await window.porciyaAI("estimate",{name});
     const per=Number(r?.kcal_per_100g), typ=Number(r?.typical_portion_g);
     const note=typeof r?.note==="string"?r.note.slice(0,60):"";
     if(!(per>=0&&per<=950)){showErr(note?`Не получилось оценить: ${note}.`:"Не получилось оценить. Уточните название.");return}
@@ -416,15 +405,29 @@ async function estimate(){
     applyEstimate();countAI();showAiLeft();
   }catch(e){
     if(e?.code==="not_granted"){$("estRow").hidden=true;showErr("Расчёт калорий отключён: доступ не разрешён.")}
+    else if(e?.code==="daily_limit")showErr("Лимит ИИ-запросов на сегодня исчерпан — завтра снова можно. Калории можно ввести вручную.")
+    else if(e?.code==="not_signed_in")showErr("Войдите в аккаунт заново, чтобы пользоваться ИИ.")
     else if(e?.code==="rate_limited")showErr("Слишком много запросов, попробуйте через минуту.");
     else if(e?.code!=="cancelled")showErr("Не получилось рассчитать. Попробуйте ещё раз или введите вручную.");
   }finally{btn.disabled=false;btn.textContent="Рассчитать калории и БЖУ"}
 }
 
 
-/* ============ photo recognition (Claude vision via "sample") ============ */
+/* ============ photo recognition (ИИ через серверную функцию) ============ */
 let thumbUrl=null, photoSupport="unknown";
 function clearThumb(){if(thumbUrl)URL.revokeObjectURL(thumbUrl);thumbUrl=null;$("thumb").hidden=true;$("thumb").removeAttribute("src")}
+// Сжимаем фото перед отправкой: телефонные снимки весят мегабайты, ИИ хватает 1280 px
+async function shrinkImage(file,max=1280){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((ok,bad)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=bad;i.src=url});
+    const k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+    const c=document.createElement("canvas");c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    return c.toDataURL("image/jpeg",0.85);
+  }catch(e){throw Object.assign(new Error("bad image"),{code:"image_rejected"})}
+  finally{URL.revokeObjectURL(url)}
+}
 async function analyzePhoto(file){
   showErr("");
   clearThumb();thumbUrl=URL.createObjectURL(file);$("thumb").src=thumbUrl;$("thumb").hidden=false;
@@ -432,16 +435,9 @@ async function analyzePhoto(file){
   pb.classList.add("busy");eb.disabled=true;
   $("estHint").textContent="Распознаю фото… это может занять до минуты.";
   const typed=$("fName").value.trim();
-  const prompt=`На фото — приём пищи. Определи, какие блюда и продукты на нём видны, оцени вес каждого в граммах (ориентируйся на размер тарелки, приборов, упаковки, типичные порции) и пищевую ценность именно этой порции.
-${typed?`Пользователь подписал блюдо так: """${typed.slice(0,120)}""". Учитывай это.\n`:""}Ответь ТОЛЬКО JSON-объектом без пояснений:
-{"items":[{"name": "название на русском", "grams": число, "kcal": число, "protein": число (г), "fat": число (г), "carbs": число (г)}],
- "kcal_low": число, "kcal_high": число (честный диапазон калорий всего приёма пищи с учётом того, чего не видно на фото: масло, соус, начинка, точный вес),
- "title": "короткое название всего приёма пищи на русском, до 60 символов",
- "has_veg_or_fruit": true или false,
- "confidence": "high" | "medium" | "low"}
-Если на фото нет еды, верни {"items": [], "title": "не похоже на еду"}.`;
   try{
-    const r=await sample.json(prompt,{images:file});
+    const image=await shrinkImage(file);
+    const r=await window.porciyaAI("photo",{typed,image});
     const items=(Array.isArray(r?.items)?r.items:[]).map(i=>({
       name:String(i?.name||"").slice(0,60),grams:Number(i?.grams),kcal:Number(i?.kcal),
       protein:Number(i?.protein),fat:Number(i?.fat),carbs:Number(i?.carbs)
@@ -467,8 +463,9 @@ ${typed?`Пользователь подписал блюдо так: """${typed
     applyEstimate();countAI();showAiLeft();
   }catch(e){
     resetHint();
-    if(e?.code==="images_unavailable"){photoSupport="no";showErr("Claude пока не принимает фото от страниц в этом приложении или браузере (images_unavailable). Можно отправить фото в чат с Claude — он добавит запись в дневник.")}
-    else if(e?.code==="image_rejected")showErr("Этот файл не подходит: нужен JPEG, PNG, WebP или GIF до 20 МБ.");
+    if(e?.code==="daily_limit")showErr("Лимит ИИ-запросов на сегодня исчерпан — завтра снова можно.")
+    else if(e?.code==="not_signed_in")showErr("Войдите в аккаунт заново, чтобы пользоваться ИИ.")
+    else if(e?.code==="image_rejected")showErr("Не получилось открыть это фото. Попробуйте другое или сделайте снимок камерой.");
     else if(e?.code==="not_granted")showErr("Распознавание отключено: доступ не разрешён.");
     else if(e?.code==="rate_limited")showErr("Слишком много запросов, попробуйте через минуту.");
     else if(e?.code!=="cancelled")showErr("Не получилось распознать фото. Попробуйте ещё раз или введите вручную.");
@@ -782,7 +779,7 @@ const h=location.hash.slice(1);
 setTab(["diary","weight","stats","plan"].includes(h)?h:"diary");
 
 
-/* ============ "Что приготовить" (Claude via "sample") ============ */
+/* ============ "Что приготовить" (ИИ через серверную функцию) ============ */
 const COOK_KEY="tarelka-fridge";
 function cookTarget(){
   const t=today();
@@ -801,24 +798,14 @@ async function cook(){
   const err=$("cookErr");err.hidden=true;
   const items=$("cookItems").value.trim();
   if(!items){err.textContent="Перечислите хотя бы пару продуктов.";err.hidden=false;return}
-  if(!sample){err.textContent="Подбор блюд временно недоступен: ИИ ещё не подключён к серверу Порции.";err.hidden=false;return}
+  if(!window.porciyaAI){err.textContent="Подбор блюд временно недоступен. Обновите страницу.";err.hidden=false;return}
   if(!canUseAI()){openPaywall(`Бесплатно доступно ${FREE_AI} ИИ-запроса в день, включая подбор блюд. В Порции Плюс — без ограничений.`);return}
   try{localStorage.setItem(COOK_KEY,items)}catch(e){}
   const tg=cookTarget();
   const btn=$("cookBtn");btn.disabled=true;btn.textContent="Подбираю…";
   const out=$("cookOut");out.innerHTML="";out.append(mk("p","small","Думаю над вариантами… обычно 10–30 секунд."));
-  const prompt=`Ты повар и нутрициолог. Предложи 2 блюда на русском языке, которые можно приготовить из этих продуктов:
-"""${items.slice(0,600)}"""
-Можно дополнительно использовать только базовое: соль, перец, специи, растительное масло, вода. Если для блюда очень нужен ещё один продукт — укажи его в "extra", но лучше обходись имеющимся.
-Цель по калорийности порции: около ${tg.kcal} ккал${tg.protein?`, желательно побольше белка (осталось добрать ${tg.protein} г)`:""}${tg.light?". Нужен лёгкий вариант":""}. Не предлагай пропускать еду.
-Ответь ТОЛЬКО JSON-объектом без пояснений:
-{"options":[{"title":"название блюда","why":"одно предложение, чем подходит","time_min":число,
- "ingredients":[{"name":"продукт","grams":число}],"steps":["шаг 1","шаг 2"],
- "portion_g":число (вес готовой порции),"kcal":число,"protein":число,"fat":число,"carbs":число,
- "has_veg_or_fruit":true или false,"extra":"продукт, которого не хватает, или пустая строка"}]}
-Если из перечисленного нельзя приготовить еду, верни {"options":[]}.`;
   try{
-    const r=await sample.json(prompt,{modelTier:"default"});
+    const r=await window.porciyaAI("cook",{items,kcal:tg.kcal,protein:tg.protein,light:!!tg.light});
     const opts=(Array.isArray(r?.options)?r.options:[]).slice(0,3).filter(o=>o&&typeof o.title==="string"&&Number(o.kcal)>0&&Number(o.kcal)<=3000&&Number(o.portion_g)>0&&Number(o.portion_g)<=3000);
     out.innerHTML="";
     if(!opts.length){out.append(mk("p","small","Не получилось придумать блюдо из этих продуктов. Добавьте ещё что-нибудь."));return}
@@ -843,7 +830,8 @@ async function cook(){
     out.append(mk("p","small","Калорийность рецептов — оценка ИИ. Проверьте продукты на аллергены."));
   }catch(e){
     out.innerHTML="";
-    if(e?.code==="rate_limited")err.textContent="Слишком много запросов, попробуйте через минуту.";
+    if(e?.code==="daily_limit")err.textContent="Лимит ИИ-запросов на сегодня исчерпан — завтра снова можно.";
+    else if(e?.code==="rate_limited")err.textContent="Слишком много запросов, попробуйте через минуту.";
     else if(e?.code==="not_granted")err.textContent="Подбор блюд отключён: доступ не разрешён.";
     else err.textContent="Не получилось подобрать блюдо. Попробуйте ещё раз.";
     if(e?.code!=="cancelled")err.hidden=false;
@@ -1113,18 +1101,10 @@ function lockForms(msg){
   $("localNote").textContent=msg;$("localNote").hidden=false;
 }
 
-(async()=>{
-  try{sample=await window.claude?.use?.("sample")}catch(e){sample=null}
-  if(!sample)return;
-  $("cook").hidden=false;
-  $("estRow").hidden=false;
-  // Кнопку показываем всегда; если фото в этом просмотре недоступны, объясняем при нажатии.
-  $("photoBtn").hidden=false;
-  let caps=null;
-  try{caps=await sample.limits()}catch(e){caps=null}
-  photoSupport=caps?(caps.images?"yes":"no"):"unknown";
-  if(caps?.images?.mediaTypes?.length)$("fPhoto").accept=caps.images.mediaTypes.join(",");
-})();
+// ИИ работает через серверную функцию Supabase (window.porciyaAI задаётся в js/cloud.js)
+$("cook").hidden=false;
+$("estRow").hidden=false;
+$("photoBtn").hidden=false;
 
 // Хранение данных и вход — в js/cloud.js (Supabase).
 

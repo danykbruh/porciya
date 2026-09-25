@@ -389,6 +389,17 @@
     btn.disabled = false; await renderPush();
   };
 
+  // ---------- ИИ: запросы идут через серверную функцию «ai» (ключ нейросети — только на сервере) ----------
+  window.porciyaAI = async (task, payload) => {
+    const { data, error } = await sb.functions.invoke("ai", { body: { task, ...payload } });
+    if (!error) return data?.result;
+    let code = "failed";
+    try { const b = await error.context.json(); if (b?.error) code = b.error; }
+    catch (e) { if (error.name === "FunctionsFetchError") code = "offline"; }
+    if (code === "bad_image") code = "image_rejected";
+    throw Object.assign(new Error(code), { code });
+  };
+
   // ---------- Для app.js: удаление аккаунта ----------
   window.porciyaCloud = {
     async deleteAccount() {
