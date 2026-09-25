@@ -208,7 +208,7 @@ function renderDiary(){
   $("sRange").hidden=!ranged.length;
   if(ranged.length){
     const lo=sum(withK,m=>isNum(m.kcalMin)?m.kcalMin:m.kcal),hi=sum(withK,m=>isNum(m.kcalMax)?m.kcalMax:m.kcal);
-    $("sRange").textContent=`Честный диапазон: ${fmtN(lo)}–${fmtN(hi)} ккал — ${ranged.length===withK.length?"все записи оценены":"часть записей оценена"} ИИ, точная цифра где-то здесь.`;
+    $("sRange").textContent=`Честный диапазон: ${fmtN(lo)}–${fmtN(hi)} ккал — ${ranged.length===withK.length?"все калории оценочные":"часть калорий оценочная"} (ИИ, справочник или этикетка), точная цифра где-то здесь.`;
   }
   const ep=effPlan(), res=ep?calcPlan(ep):null, ok=res&&!res.error;
   $("goalBox").hidden=!ok;
@@ -471,6 +471,112 @@ async function analyzePhoto(file){
     else if(e?.code!=="cancelled")showErr("Не получилось распознать фото. Попробуйте ещё раз или введите вручную.");
   }finally{pb.classList.remove("busy");eb.disabled=false}
 }
+
+/* ============ база продуктов и штрихкоды ============ */
+// Подставить продукт (из базы или по штрихкоду) в форму: калории и БЖУ на 100 г + обычная порция
+function useFood(f,source,note){
+  $("fName").value=f.name.slice(0,120);
+  const spread=source==="barcode"?0.03:0.1;   // по этикетке точнее, чем усреднённая справка
+  est={name:$("fName").value.trim(),per100:f.kcal100,source,note,lo:1-spread,hi:1+spread,conf:"high"};
+  if([f.p100,f.f100,f.c100].every(v=>isNum(v)))Object.assign(est,{p100:Number(f.p100),f100:Number(f.f100),c100:Number(f.c100)});
+  if(!$("fGrams").value&&f.portion_g>0)$("fGrams").value=f.portion_g;
+  showErr("");applyEstimate();hideSug();
+  if(!$("fGrams").value)$("fGrams").focus();
+}
+let sugItems=[],sugIndex=-1,sugTimer=null,sugSeq=0;
+function hideSug(){$("foodSug").hidden=true;$("fName").setAttribute("aria-expanded","false");sugItems=[];sugIndex=-1}
+function renderSug(){
+  const ul=$("foodSug");ul.innerHTML="";
+  if(!sugItems.length){hideSug();return}
+  sugItems.forEach((f,i)=>{
+    const li=mk("li");li.id="sug-"+i;li.setAttribute("role","option");li.setAttribute("aria-selected",String(i===sugIndex));
+    li.append(document.createTextNode(f.name),mk("span",null,`${f.kcal100} ккал/100 г`));
+    li.addEventListener("mousedown",ev=>{ev.preventDefault();useFood(f,"base","из базы продуктов")});
+    ul.append(li);
+  });
+  ul.hidden=false;$("fName").setAttribute("aria-expanded","true");
+  if(sugIndex>=0)$("fName").setAttribute("aria-activedescendant","sug-"+sugIndex);else $("fName").removeAttribute("aria-activedescendant");
+}
+$("fName").addEventListener("input",()=>{
+  clearTimeout(sugTimer);
+  const q=$("fName").value.trim();
+  if(q.length<2||!window.porciyaFoods){hideSug();return}
+  sugTimer=setTimeout(async()=>{
+    const seq=++sugSeq;
+    const res=await window.porciyaFoods.search(q).catch(()=>[]);
+    if(seq!==sugSeq||$("fName").value.trim()!==q)return;   // пришёл ответ на устаревший запрос
+    sugItems=res;sugIndex=-1;renderSug();
+  },200);
+});
+$("fName").addEventListener("keydown",ev=>{
+  if($("foodSug").hidden)return;
+  if(ev.key==="ArrowDown"){ev.preventDefault();sugIndex=(sugIndex+1)%sugItems.length;renderSug()}
+  else if(ev.key==="ArrowUp"){ev.preventDefault();sugIndex=(sugIndex-1+sugItems.length)%sugItems.length;renderSug()}
+  else if(ev.key==="Enter"&&sugIndex>=0){ev.preventDefault();useFood(sugItems[sugIndex],"base","из базы продуктов")}
+  else if(ev.key==="Escape")hideSug();
+});
+$("fName").addEventListener("blur",()=>setTimeout(hideSug,150));
+
+// Сканер: библиотека html5-qrcode загружается только при первом нажатии «Штрихкод»
+const SCAN_LIB="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js";
+let scanner=null,scanLibPromise=null,scanReturnFocus=null,scanBusy=false;
+function loadScanLib(){
+  if(!scanLibPromise)scanLibPromise=new Promise((ok,bad)=>{
+    const sc=document.createElement("script");sc.src=SCAN_LIB;sc.crossOrigin="anonymous";
+    sc.onload=()=>ok(window.__Html5QrcodeLibrary__||window);sc.onerror=()=>{scanLibPromise=null;bad(new Error("lib"))};
+    document.head.append(sc);
+  });
+  return scanLibPromise;
+}
+async function stopScanner(){
+  const s=scanner;scanner=null;
+  if(s){try{await s.stop()}catch(e){}try{s.clear()}catch(e){}}
+}
+async function openScanner(){
+  scanReturnFocus=document.activeElement;
+  $("scanner").hidden=false;$("scView").hidden=false;$("scErr").hidden=true;$("scCode").value="";
+  $("scHint").textContent="Включаю камеру…";
+  try{
+    const lib=await loadScanLib();
+    if($("scanner").hidden)return;
+    const F=lib.Html5QrcodeSupportedFormats;
+    scanner=new lib.Html5Qrcode("scView",{verbose:false,formatsToSupport:[F.EAN_13,F.EAN_8,F.UPC_A,F.UPC_E]});
+    await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:260,height:140}},code=>{if(!scanBusy)findBarcode(code)},()=>{});
+    $("scHint").textContent="Наведите камеру на штрихкод на упаковке.";
+  }catch(e){
+    await stopScanner();$("scView").hidden=true;
+    $("scHint").textContent="Камера недоступна — введите цифры под штрихкодом вручную.";
+    $("scCode").focus();
+  }
+}
+async function closeScanner(){
+  await stopScanner();$("scanner").hidden=true;
+  if(scanReturnFocus?.focus)scanReturnFocus.focus();
+}
+async function findBarcode(raw){
+  const code=String(raw).replace(/\D/g,"");
+  const err=$("scErr");err.hidden=true;
+  if(!/^\d{8,14}$/.test(code)){err.textContent="Штрихкод — это 8–14 цифр.";err.hidden=false;return}
+  scanBusy=true;$("scHint").textContent="Ищу товар…";
+  try{
+    const r=await window.porciyaAI("barcode",{code});
+    await closeScanner();
+    if(!isNum(r?.kcal100)){
+      $("fName").value=(r?.name||"").slice(0,120);est=null;resetHint();
+      showErr("Товар найден, но калорийности в базе нет — введите калории по этикетке.");return;
+    }
+    useFood({...r,portion_g:null},"barcode",`по штрихкоду${r.quantity?` · упаковка ${r.quantity}`:""} · Open Food Facts`);
+  }catch(e){
+    const c=e?.code;
+    err.textContent=c==="not_found"?"Такого товара нет в открытой базе. Введите вручную или сфотографируйте блюдо.":c==="offline"?"Нет интернета. Попробуйте позже.":"Не получилось найти товар. Попробуйте ещё раз.";
+    err.hidden=false;$("scHint").textContent="Можно попробовать другой товар или ввести цифры вручную.";
+  }finally{scanBusy=false}
+}
+$("scanBtn").onclick=openScanner;
+$("scClose").onclick=closeScanner;
+$("scanner").addEventListener("click",e=>{if(e.target===$("scanner"))closeScanner()});
+$("scForm").addEventListener("submit",e=>{e.preventDefault();findBarcode($("scCode").value)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("scanner").hidden)closeScanner()});
 
 /* ============ weight log ============ */
 function renderWeight(){
@@ -988,7 +1094,7 @@ function csvCell(v){v=v==null?"":String(v);return /[";\n\r]/.test(v)?`"${v.repla
 const dec=v=>isNum(v)?String(v).replace(".",","):"";
 function mealsCSV(){
   const head=["Дата","Время","Приём пищи","Блюдо","Вес, г","Ккал","Ккал мин","Ккал макс","Белки, г","Жиры, г","Углеводы, г","Овощи/фрукты","Источник калорий"];
-  const src={ai:"ИИ по названию",photo:"ИИ по фото",recipe:"рецепт ИИ",fav:"избранное",manual:"вручную"};
+  const src={ai:"ИИ по названию",photo:"ИИ по фото",recipe:"рецепт ИИ",fav:"избранное",manual:"вручную",base:"база продуктов",barcode:"штрихкод"};
   const rows=[...meals].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).map(m=>[
     m.date,m.time,T[m.type]?.label||m.type,m.name,m.grams??"",m.kcal??"",m.kcalMin??"",m.kcalMax??"",dec(m.protein),dec(m.fat),dec(m.carbs),m.veg?"да":"",src[m.kcalSource]||(isNum(m.kcal)?"вручную":"")]);
   return "\uFEFF"+[head,...rows].map(r=>r.map(csvCell).join(";")).join("\r\n");
@@ -1105,6 +1211,7 @@ function lockForms(msg){
 $("cook").hidden=false;
 $("estRow").hidden=false;
 $("photoBtn").hidden=false;
+$("scanBtn").hidden=false;
 
 // Хранение данных и вход — в js/cloud.js (Supabase).
 

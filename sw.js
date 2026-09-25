@@ -1,6 +1,6 @@
 // Порция — service worker: позволяет установить приложение и открывать его без интернета.
 // Меняйте VERSION при каждом обновлении файлов, чтобы телефоны получили свежую версию.
-const VERSION = "porciya-v4";
+const VERSION = "porciya-v5";
 const SHELL = [
   "./", "index.html", "css/styles.css",
   "js/config.js", "js/app.js", "js/cloud.js",

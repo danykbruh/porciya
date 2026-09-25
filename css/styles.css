@@ -287,3 +287,17 @@ body.signed-out .acct{display:none}
 .authcard .btns{align-items:center}
 .acct #logoutBtn{font-size:13px;color:var(--muted)}
 .pushbox{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:1px solid var(--line)}
+
+/* База продуктов: подсказки под полем «Что ели» */
+.field.name{position:relative}
+.sug{position:absolute;left:0;right:0;top:100%;margin:4px 0 0;padding:4px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:20;max-height:280px;overflow:auto}
+.sug li{padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.sug li span{color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sug li[aria-selected="true"],.sug li:hover{background:var(--accent-soft)}
+/* Сканер штрихкода */
+.scview[hidden]{display:none}
+.scview{width:100%;min-height:200px;border-radius:12px;overflow:hidden;background:#000}
+.scview video{width:100%!important;height:auto;display:block}
+.scmanual{display:flex;gap:8px;align-items:flex-end}
+.scmanual .field{flex:1}
+.sheet a{color:var(--accent)}

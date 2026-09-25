@@ -109,7 +109,7 @@
       <div class="favs" id="favs" hidden></div>
       <div class="types" role="radiogroup" aria-label="Тип приёма пищи" id="types"></div>
       <div class="row">
-        <div class="field name"><label for="fName">Что ели</label><input id="fName" required maxlength="120" placeholder="Овсянка с бананом"></div>
+        <div class="field name"><label for="fName">Что ели</label><input id="fName" required maxlength="120" placeholder="Овсянка с бананом" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="foodSug"><ul class="sug" id="foodSug" role="listbox" aria-label="Продукты из базы" hidden></ul></div>
         <div class="field"><label for="fTime">Время</label><input id="fTime" type="time" required></div>
         <div class="field"><label for="fGrams">Вес, г</label><input id="fGrams" type="number" min="1" max="5000" inputmode="numeric" placeholder="—"></div>
         <div class="field"><label for="fKcal">Ккал</label><input id="fKcal" type="number" min="0" max="10000" inputmode="numeric" placeholder="—"></div>
@@ -118,6 +118,7 @@
       <div class="estimate" id="estRow" hidden>
         <button type="button" class="ghost" id="estBtn">Рассчитать калории и БЖУ</button>
         <label class="ghost photobtn" id="photoBtn" hidden>Распознать по фото<input type="file" id="fPhoto" accept="image/*"></label>
+        <button type="button" class="ghost" id="scanBtn" hidden>Штрихкод</button>
         <img class="thumb" id="thumb" alt="Фото еды" hidden>
         <span class="hint" id="estHint"></span>
       </div>
@@ -263,6 +264,7 @@
           <li>Чтобы ИИ не расходовался без меры, сервер считает число ИИ-запросов каждого пользователя за день.</li>
           <li>Фото приложение не сохраняет: после распознавания остаются только название блюда, вес и калории.</li>
           <li>Запросы к ИИ отправляются только по вашему нажатию, никогда автоматически.</li>
+          <li>При поиске по штрихкоду сервер Порции запрашивает у открытой базы Open Food Facts только номер штрихкода — без ваших данных.</li>
         </ul>
         <h3>Ваши права</h3>
         <ul>
@@ -289,6 +291,23 @@
       <label><input type="radio" name="theme" id="thDark" value="dark"><span>Тёмное</span></label>
     </fieldset>
   </footer>
+</div>
+
+<div class="backdrop" id="scanner" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="scTitle">
+    <div class="top">
+      <h2 id="scTitle">Штрихкод</h2>
+      <button type="button" class="x-close" id="scClose" aria-label="Закрыть">×</button>
+    </div>
+    <div id="scView" class="scview"></div>
+    <p class="small" id="scHint">Наведите камеру на штрихкод на упаковке.</p>
+    <form class="scmanual" id="scForm" autocomplete="off">
+      <div class="field"><label for="scCode">Или введите цифры под штрихкодом</label><input id="scCode" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="4600000000000"></div>
+      <button class="ghost" type="submit">Найти</button>
+    </form>
+    <p class="err" id="scErr" hidden></p>
+    <p class="small">Данные о товарах — из открытой базы <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a> (лицензия ODbL). Проверяйте калорийность по этикетке.</p>
+  </div>
 </div>
 
 <div class="backdrop" id="paywall" hidden>

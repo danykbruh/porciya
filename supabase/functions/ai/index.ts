@@ -107,6 +107,33 @@ async function callModel(prompt: string, image?: string): Promise<string> {
   return text;
 }
 
+// ---------- Штрихкод: ищем товар в открытой базе Open Food Facts ----------
+// Запрос идёт через наш сервер: так мы можем представиться, как просит Open Food Facts,
+// и сайт не зависит от их настроек CORS. Данные не сохраняем — только передаём пользователю.
+export function parseOff(json: any) {
+  const p = json?.product;
+  if (json?.status !== 1 || !p) return null;
+  const n = p.nutriments ?? {};
+  let kcal = Number(n["energy-kcal_100g"]);
+  if (!Number.isFinite(kcal) && Number.isFinite(Number(n["energy_100g"]))) kcal = Number(n["energy_100g"]) / 4.184; // кДж → ккал
+  const r1 = (v: unknown) => { const x = Number(v); return Number.isFinite(x) && x >= 0 && x <= 100 ? Math.round(x * 10) / 10 : null; };
+  const name = String(p.product_name_ru || p.product_name || "").trim().slice(0, 100);
+  const brand = String(p.brands || "").split(",")[0].trim().slice(0, 40);
+  return {
+    name: brand && name && !name.toLowerCase().includes(brand.toLowerCase()) ? `${name} (${brand})` : name || brand,
+    kcal100: Number.isFinite(kcal) && kcal >= 0 && kcal <= 950 ? Math.round(kcal) : null,
+    p100: r1(n.proteins_100g), f100: r1(n.fat_100g), c100: r1(n.carbohydrates_100g),
+    quantity: String(p.quantity || "").slice(0, 30),
+  };
+}
+async function lookupBarcode(code: string) {
+  const url = `https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,product_name_ru,brands,quantity,nutriments`;
+  const res = await fetch(url, { headers: { "User-Agent": "Porciya/1.0 (stroev.danill@yandex.ru)" }, signal: AbortSignal.timeout(15_000) });
+  if (res.status === 404) return null;
+  if (!res.ok) throw Object.assign(new Error(`off ${res.status}`), { code: "provider_error" });
+  return parseOff(await res.json());
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
   if (req.method !== "POST") return reply(req, 405, { error: "method_not_allowed" });
@@ -122,6 +149,17 @@ Deno.serve(async (req) => {
   // 2. Что спрашивает
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return reply(req, 400, { error: "bad_json" }); }
+  // Штрихкод — не ИИ, в дневной лимит ИИ не входит
+  if (body.task === "barcode") {
+    const code = String(body.code ?? "").replace(/\D/g, "");
+    if (!/^\d{8,14}$/.test(code)) return reply(req, 400, { error: "bad_code" });
+    try {
+      const item = await lookupBarcode(code);
+      if (!item || (!item.name && item.kcal100 == null)) return reply(req, 404, { error: "not_found" });
+      return reply(req, 200, { result: item });
+    } catch (e) { console.error(String(e)); return reply(req, 502, { error: "provider_error" }); }
+  }
+
   const built = buildTask(String(body.task ?? ""), body);
   if ("error" in built) return reply(req, 400, { error: built.error });
 

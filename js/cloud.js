@@ -400,6 +400,19 @@
     throw Object.assign(new Error(code), { code });
   };
 
+  // ---------- База продуктов: поиск по названию (таблица foods, только чтение) ----------
+  window.porciyaFoods = {
+    async search(q) {
+      const t = q.toLowerCase().replace(/[%_,()*\\]/g, " ").replace(/\s+/g, " ").trim();
+      if (t.length < 2) return [];
+      const { data, error } = await sb.from("foods")
+        .select("name,kcal100,p100,f100,c100,portion_g").ilike("search", `%${t}%`).limit(30);
+      if (error || !data) return [];
+      const starts = (f) => (f.name.toLowerCase().startsWith(t) ? 0 : 1);
+      return data.sort((a, b) => starts(a) - starts(b) || a.name.length - b.name.length).slice(0, 8);
+    },
+  };
+
   // ---------- Для app.js: удаление аккаунта ----------
   window.porciyaCloud = {
     async deleteAccount() {
