@@ -246,6 +246,7 @@
     }
     hideAuth();
     renderAll(); fillRemForm(); renderNudges(); maybeOnboard();
+    renderPush();
   }
 
   sb.auth.onAuthStateChange((event, session) => {
@@ -267,7 +268,10 @@
   $("afForgot").onclick = () => setMode("reset");
   $("afBack").onclick = () => setMode("login");
   $("afLogout").onclick = () => sb.auth.signOut();
-  $("logoutBtn").onclick = async () => { await sb.auth.signOut(); showAuth("login", "Вы вышли из аккаунта."); };
+  $("logoutBtn").onclick = async () => {
+    await disablePush().catch(() => {}); // вышедший из аккаунта телефон больше не получает напоминания
+    await sb.auth.signOut(); showAuth("login", "Вы вышли из аккаунта.");
+  };
   $("afPolicy").onclick = () => {
     const box = $("afPolicyBox");
     if (!box.childElementCount) box.append($("privacy").querySelector(".policy").cloneNode(true));
@@ -315,9 +319,80 @@
     finally { btn.disabled = false; }
   });
 
+  // ---------- Пуш-уведомления ----------
+  const VAPID = cfg.vapidPublicKey || "";
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  function b64ToU8(s) {
+    const pad = "=".repeat((4 - (s.length % 4)) % 4);
+    const raw = atob((s + pad).replace(/-/g, "+").replace(/_/g, "/"));
+    return Uint8Array.from(raw, (c) => c.charCodeAt(0));
+  }
+  // getRegistration не «зависает», если service worker не установлен (в отличие от .ready)
+  async function currentSub() {
+    const reg = await navigator.serviceWorker.getRegistration();
+    return reg?.pushManager ? reg.pushManager.getSubscription() : null;
+  }
+  async function pushState() {
+    if (!VAPID) return "not-configured";
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+      return isIOS && !standalone() ? "ios-install" : "unsupported";
+    }
+    if (Notification.permission === "denied") return "denied";
+    return (await currentSub()) ? "on" : "off";
+  }
+  async function renderPush() {
+    const box = $("pushBox"); if (!box || !uid) return;
+    const st = await pushState().catch(() => "unsupported");
+    box.hidden = st === "not-configured";
+    const btn = $("pushBtn"), hint = $("pushHint");
+    btn.hidden = !(st === "on" || st === "off");
+    btn.textContent = st === "on" ? "Выключить уведомления на этом устройстве" : "Включить уведомления на этом устройстве";
+    hint.textContent = {
+      on: "Уведомления включены на этом устройстве.",
+      off: "Напоминания будут приходить, даже когда Порция закрыта.",
+      denied: "Уведомления запрещены в настройках браузера или телефона. Разрешите их для этого сайта и обновите страницу.",
+      "ios-install": "На iPhone уведомления работают только в установленном приложении: Safari → «Поделиться» → «На экран „Домой“», затем откройте Порцию с иконки.",
+      unsupported: "Этот браузер не поддерживает уведомления.",
+    }[st] || "";
+  }
+  async function enablePush() {
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") { await renderPush(); return; }
+    const reg = (await navigator.serviceWorker.getRegistration()) || (await navigator.serviceWorker.register("sw.js"));
+    const subscribe = () => reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(VAPID) });
+    let sub = (await reg.pushManager.getSubscription()) || (await subscribe());
+    const row = (s) => {
+      const j = s.toJSON();
+      return { endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC" };
+    };
+    let r = await sb.from("push_subscriptions").upsert(row(sub), { onConflict: "endpoint" });
+    if (r.error) {
+      // Адрес этого устройства числится за другим аккаунтом — берём новый адрес
+      await sub.unsubscribe().catch(() => {});
+      sub = await subscribe();
+      await must(sb.from("push_subscriptions").insert(row(sub)));
+    }
+    if (!settings.reminders?.on) { settings.reminders = { ...settings.reminders, on: true }; fillRemForm(); await saveSettings(); }
+  }
+  async function disablePush() {
+    if (!("serviceWorker" in navigator)) return;
+    const sub = await currentSub();
+    if (!sub) return;
+    await sb.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+    await sub.unsubscribe();
+  }
+  $("pushBtn").onclick = async () => {
+    const btn = $("pushBtn"); btn.disabled = true;
+    try { (await pushState()) === "on" ? await disablePush() : await enablePush(); }
+    catch (e) { $("pushHint").textContent = "Не получилось включить уведомления. Проверьте интернет и попробуйте ещё раз."; btn.disabled = false; return; }
+    btn.disabled = false; await renderPush();
+  };
+
   // ---------- Для app.js: удаление аккаунта ----------
   window.porciyaCloud = {
     async deleteAccount() {
+      await disablePush().catch(() => {});
       await must(sb.rpc("delete_my_account"));
       try { await sb.auth.signOut(); } catch (e) { /* пользователя уже нет — это нормально */ }
       showAuth("login", "Аккаунт и все данные удалены.");

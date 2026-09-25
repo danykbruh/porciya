@@ -1,6 +1,6 @@
 // Порция — service worker: позволяет установить приложение и открывать его без интернета.
 // Меняйте VERSION при каждом обновлении файлов, чтобы телефоны получили свежую версию.
-const VERSION = "porciya-v1";
+const VERSION = "porciya-v2";
 const SHELL = [
   "./", "index.html", "css/styles.css",
   "js/config.js", "js/app.js", "js/cloud.js",
@@ -52,4 +52,26 @@ self.addEventListener("fetch", (e) => {
       return res;
     }))());
   }
+});
+
+// ---------- Пуш-уведомления ----------
+self.addEventListener("push", (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(d.title || "Порция", {
+    body: d.body || "",
+    tag: d.tag,
+    icon: "icons/icon-192.png",
+    badge: "icons/icon-192.png",
+    data: { url: d.url || "./" },
+  }));
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  e.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const w of wins) if ("focus" in w) return w.focus();
+    return self.clients.openWindow(new URL(e.notification.data?.url || "./", self.registration.scope).href);
+  })());
 });

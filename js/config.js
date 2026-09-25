@@ -5,4 +5,6 @@
 window.PORCIYA_CONFIG = {
   supabaseUrl: "https://hjhkclhidtmgkehaeueq.supabase.co",
   supabasePublishableKey: "sb_publishable_nw_xDPkF5ziqktolMeuEHA_si1iqgX2",
+  // Публичный VAPID-ключ для пуш-уведомлений (приватный — только в секретах Supabase)
+  vapidPublicKey: "",
 };

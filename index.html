@@ -203,7 +203,11 @@
         <div class="field"><label for="remLunch">Обед после</label><input id="remLunch" type="time" value="14:00"></div>
         <div class="field"><label for="remDinner">Ужин после</label><input id="remDinner" type="time" value="20:00"></div>
       </div>
-      <p class="small">Если к этому времени приём пищи не записан, вверху приложения появится напоминание. Оно исчезнет, как только вы запишете еду или отметите, что сегодня этот приём пропускаете. Напоминания видны, пока приложение открыто.</p>
+      <p class="small">Если к этому времени приём пищи не записан, придёт напоминание. Оно не придёт, если вы уже записали еду или отметили, что сегодня этот приём пропускаете.</p>
+      <div class="pushbox" id="pushBox" hidden>
+        <div class="btns"><button type="button" class="ghost" id="pushBtn">Включить уведомления на этом устройстве</button></div>
+        <p class="small" id="pushHint"></p>
+      </div>
       <p class="small" id="remSaved" aria-live="polite"></p>
     </form>
 

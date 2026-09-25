@@ -286,3 +286,4 @@ body.signed-out .acct{display:none}
 .afpolicy{border:1px solid var(--line);border-radius:12px;padding:12px;max-height:280px;overflow:auto;background:var(--bg)}
 .authcard .btns{align-items:center}
 .acct #logoutBtn{font-size:13px;color:var(--muted)}
+.pushbox{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:1px solid var(--line)}
