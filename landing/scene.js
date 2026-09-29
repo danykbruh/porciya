@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (s, r = document) => r.querySelector(s);
@@ -282,6 +283,37 @@ const F = types.map((t, i) => {
   return { mesh, base, phase: Math.random() * 10, spin: new THREE.Vector3(rnd(-0.6, 0.6), rnd(-0.6, 0.6), rnd(-0.6, 0.6)), s: rnd(0.8, 1.15) };
 });
 
+// ---------- настоящие 3D-модели (фотосканы Poly Haven, CC0) ----------
+// Лежат в папке models/. Пока грузятся (или если их нет) — летают нарисованные в коде.
+const REAL = {
+  food_avocado_01: { file: 'models/food_avocado_01/food_avocado_01_1k.gltf', size: 0.62 },
+  food_lime_01: { file: 'models/food_lime_01/food_lime_01_1k.gltf', size: 0.42 },
+  food_kiwi_01: { file: 'models/food_kiwi_01/food_kiwi_01_1k.gltf', size: 0.46 },
+  lemon: { file: 'models/lemon/lemon_1k.gltf', size: 0.5 },
+};
+// какой летающий ингредиент на какую модель заменить (номер → модель)
+const SWAP = { 1: 'lemon', 3: 'food_avocado_01', 4: 'food_lime_01', 7: 'food_kiwi_01', 8: 'food_lime_01', 9: 'food_kiwi_01', 12: 'food_avocado_01' };
+const loader = new GLTFLoader();
+Object.entries(REAL).forEach(([id, m]) => {
+  loader.load(m.file, gltf => {
+    const model = gltf.scene;
+    // Центрируем и приводим к нужному размеру, какими бы ни были исходные единицы
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
+    model.position.sub(center);
+    const holder = new THREE.Group(); holder.add(model);
+    holder.scale.setScalar(m.size / Math.max(size.x, size.y, size.z));
+    Object.entries(SWAP).forEach(([i, want]) => {
+      if (want !== id) return;
+      const f = F[+i];
+      f.mesh.clear();
+      f.mesh.add(holder.clone());
+      f.spin.multiplyScalar(0.5);
+      f.s = rnd(1.0, 1.2);
+    });
+  }, undefined, () => { /* модели нет — остаётся нарисованный вариант */ });
+});
+
 // ---------- состояния по секциям ----------
 //  bx,by — позиция тарелки, bs — масштаб, rx — наклон к камере,
 //  lab — подписи, scan — рамка сканера, ring — кольца, fv — видимость ингредиентов, fs — их разлёт
@@ -332,7 +364,7 @@ function targetState() {
   t.bx *= f; t.bs *= Math.min(1, 0.25 + 0.75 * f);
   if (mobile) { // на телефоне тарелка всегда сверху по центру, текст снизу
     const topY = Math.tan(THREE.MathUtils.degToRad(16)) * camDist;
-    t.bx = 0; t.by = topY * 0.36; t.bs *= 0.95 - 0.25 * t.ring;
+    t.bx = 0; t.by = topY * 0.36; t.bs *= 0.95 - 0.25 * t.ring + 0.45 * t.lab;
   }
   return t;
 }
