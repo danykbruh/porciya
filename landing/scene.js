@@ -112,10 +112,12 @@ for (let k = 0; k <= 20; k++) {
   const t = k / 20;
   innerPts.push(new THREE.Vector2(Math.max(0.0001, 1.4 * Math.cos(t * Math.PI / 2)), 0.415 - 0.72 * Math.sin(t * Math.PI / 2)));
 }
-spin.add(new THREE.Mesh(new THREE.LatheGeometry(outerPts, 96), M.glaze));
-spin.add(new THREE.Mesh(new THREE.LatheGeometry(innerPts, 96), M.inner));
+// Запасная тарелка из кода: видна, пока грузится настоящая модель (или если её нет)
+const codeBowl = new THREE.Group(); spin.add(codeBowl);
+codeBowl.add(new THREE.Mesh(new THREE.LatheGeometry(outerPts, 96), M.glaze));
+codeBowl.add(new THREE.Mesh(new THREE.LatheGeometry(innerPts, 96), M.inner));
 const rim = new THREE.Mesh(new THREE.TorusGeometry(1.46, 0.028, 16, 128), M.gold);
-rim.rotation.x = Math.PI / 2; rim.position.y = 0.41; spin.add(rim);
+rim.rotation.x = Math.PI / 2; rim.position.y = 0.41; codeBowl.add(rim);
 
 const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4, 4),
   new THREE.MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false, opacity: 0.5 }));
@@ -313,6 +315,20 @@ Object.entries(REAL).forEach(([id, m]) => {
     });
   }, undefined, () => { /* модели нет — остаётся нарисованный вариант */ });
 });
+
+// Настоящая деревянная миска (фотоскан Poly Haven, CC0) вместо тарелки из кода
+loader.load('models/wooden_bowl_01/wooden_bowl_01_1k.gltf', gltf => {
+  const model = gltf.scene;
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
+  const k = 3.05 / Math.max(size.x, size.z);          // ширина как у тарелки из кода
+  model.position.set(-center.x, -box.min.y, -center.z); // дно на нуле
+  const holder = new THREE.Group(); holder.add(model);
+  holder.scale.setScalar(k);
+  holder.position.y = 0.44 - size.y * k;               // верхний край там же, где был
+  spin.add(holder);
+  codeBowl.visible = false;
+}, undefined, () => {});
 
 // ---------- состояния по секциям ----------
 //  bx,by — позиция тарелки, bs — масштаб, rx — наклон к камере,

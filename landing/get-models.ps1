@@ -7,7 +7,8 @@ $models = @(
   @{ id = "food_avocado_01"; bin = "8k"; tex = @("diff", "nor_gl", "rough") },
   @{ id = "food_lime_01";    bin = "8k"; tex = @("diff", "nor_gl", "rough") },
   @{ id = "food_kiwi_01";    bin = "8k"; tex = @("diff", "nor_gl", "rough") },
-  @{ id = "lemon";           bin = "4k"; tex = @("diff", "nor_gl", "arm") }
+  @{ id = "lemon";           bin = "4k"; tex = @("diff", "nor_gl", "arm") },
+  @{ id = "wooden_bowl_01";  bin = "8k"; tex = @("diff", "nor_gl", "arm") }
 )
 foreach ($m in $models) {
   $id = $m.id
