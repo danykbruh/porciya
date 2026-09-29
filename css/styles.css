@@ -341,3 +341,9 @@ body.signed-out .submit{box-shadow:0 10px 26px -12px rgba(212,176,110,.7)}
 /* Автозаполнение браузера не должно заливать поля ярко-синим */
 body.signed-out .field input:-webkit-autofill{-webkit-text-fill-color:var(--ink);transition:background-color 9999s;box-shadow:0 0 0 40px rgba(40,29,19,.9) inset}
 @media (min-height:640px){body.signed-out .wrap{padding-top:8vh}}
+
+/* 3D-лендинг поверх приложения на том же адресе */
+#landingFrame{display:none}
+html.landing-on #landingFrame{display:block;position:fixed;inset:0;width:100%;height:100%;border:0;z-index:100;background:#1E150D;transition:opacity .45s ease}
+html.landing-on body{overflow:hidden}
+html.landing-leaving #landingFrame{opacity:0;pointer-events:none}

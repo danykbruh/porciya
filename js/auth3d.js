@@ -12,13 +12,15 @@ function signedOut() { return document.body.classList.contains('signed-out'); }
 
 // Следим за входом/выходом: класс signed-out ставит и снимает js/cloud.js
 new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 document.addEventListener('visibilitychange', sync);
 sync();
 
 function sync() {
   // Показываем холст только на экране входа (не зависим от того, успел ли обновиться CSS)
   canvas.style.display = signedOut() ? 'block' : 'none';
-  const want = signedOut() && !document.hidden;
+  // пока поверх открыт 3D-лендинг, фон входа не рисуем — незачем нагружать видеокарту дважды
+  const want = signedOut() && !document.hidden && !document.documentElement.classList.contains('landing-on');
   if (want && !started) { started = true; start().catch(e => console.warn('Порция 3D-фон:', e)); }
   if (want && ctx && !running) { running = true; ctx.clock.getDelta(); rafId = requestAnimationFrame(loop); }
   if (!want && running) { running = false; cancelAnimationFrame(rafId); }

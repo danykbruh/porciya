@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Порция</title>
 <script>
-// Новых посетителей сначала встречает 3D-лендинг. Приложение открывается сразу, если:
+// Новых посетителей сначала встречает 3D-лендинг (прямо на этой же странице, поверх экрана входа). Приложение открывается сразу, если:
 // человек уже вошёл, запустил Порцию с главного экрана телефона, пришёл по кнопке с лендинга (?app)
 // или открыл ссылку из письма (подтверждение почты, сброс пароля).
 (function () {
@@ -14,7 +14,7 @@
     var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
     var signedIn = Object.keys(localStorage).some(function (k) { return /^sb-.+-auth-token$/.test(k); });
     var fromLink = /[?&]app\b/.test(q) || /[?&](code|token_hash|type|error)=/.test(q) || /access_token|error_description|type=/.test(h);
-    if (!standalone && !signedIn && !fromLink) location.replace('landing/');
+    if (!standalone && !signedIn && !fromLink) document.documentElement.classList.add('landing-on');
   } catch (e) { /* если что-то не так — просто остаёмся в приложении */ }
 })();
 </script>
@@ -40,7 +40,7 @@
 <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="icons/splash/splash-1242x2688.png">
 <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="icons/splash/splash-828x1792.png">
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="icons/splash/splash-750x1334.png">
-<link rel="stylesheet" href="css/styles.css?v=8">
+<link rel="stylesheet" href="css/styles.css?v=9">
 <!-- 3D-фон экрана входа: Three.js подгружается, только пока человек не вошёл -->
 <script type="importmap">
 { "imports": {
@@ -48,7 +48,7 @@
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/auth3d.js?v=8"></script>
+<script type="module" src="js/auth3d.js?v=9"></script>
 <!-- Библиотека Supabase. TODO: закрепить точную версию (сейчас последняя 2.x) и добавить integrity-хеш -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous" defer></script>
 <script src="js/config.js" defer></script>
@@ -56,6 +56,24 @@
 <script src="js/cloud.js" defer></script>
 </head>
 <body class="signed-out">
+<!-- 3D-лендинг поверх приложения. Кнопка «Открыть Порцию» убирает его и показывает вход — адрес страницы тот же -->
+<iframe id="landingFrame" title="Порция" allow="fullscreen"></iframe>
+<script>
+(function () {
+  var f = document.getElementById('landingFrame'), root = document.documentElement;
+  if (!root.classList.contains('landing-on')) { f.remove(); return; }
+  f.src = 'landing/';
+  addEventListener('message', function (e) {
+    if (e.origin !== location.origin || !e.data || e.data.type !== 'porciya-open-app') return;
+    root.classList.add('landing-leaving');
+    setTimeout(function () {
+      root.classList.remove('landing-on', 'landing-leaving');
+      f.remove();
+      var em = document.getElementById('afEmail'); if (em) em.focus({ preventScroll: true });
+    }, 450);
+  });
+})();
+</script>
 <canvas id="authBg" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none"></canvas>
 <div class="wrap">
   <header>
