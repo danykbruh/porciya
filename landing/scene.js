@@ -419,12 +419,12 @@ let bowlKcal = 564;
 //  bx,by — позиция тарелки, bs — масштаб, rx — наклон к камере,
 //  lab — подписи, scan — рамка сканера, ring — кольца, fv — видимость ингредиентов, fs — их разлёт
 const S = [
-  { bx: 1.55, by: -0.15, bs: 1.05, rx: 0.42, lab: 0, scan: 0, ring: 0, fv: 1, fs: 1.0, bg: '#0D1712', ink: '#F4F6F1' },
-  { bx: -1.45, by: -0.15, bs: 0.86, rx: 0.8, lab: 1, scan: 1, ring: 0, fv: 0, fs: 0.5, bg: '#0A1510', ink: '#F4F6F1' },
-  { bx: -1.5, by: 0, bs: 0.78, rx: 0.3, lab: 0, scan: 0, ring: 1, fv: 0, fs: 0.5, bg: '#17120D', ink: '#F4F6F1' },
+  { bx: 1.55, by: -0.15, bs: 1.05, rx: 0.42, lab: 0, scan: 0, ring: 0, fv: 1, fs: 1.0, bg: '#1E150D', ink: '#F4F6F1' },
+  { bx: -1.45, by: -0.15, bs: 0.86, rx: 0.8, lab: 1, scan: 1, ring: 0, fv: 0, fs: 0.5, bg: '#15100A', ink: '#F4F6F1' },
+  { bx: -1.5, by: 0, bs: 0.78, rx: 0.3, lab: 0, scan: 0, ring: 1, fv: 0, fs: 0.5, bg: '#24180F', ink: '#F4F6F1' },
   { bx: 1.75, by: -0.1, bs: 0.92, rx: 0.5, lab: 0, scan: 0, ring: 0, fv: 1, fs: 1.3, bg: '#1F160C', ink: '#F4F6F1' },
-  { bx: -1.7, by: -0.1, bs: 0.85, rx: 0.45, lab: 0, scan: 0, ring: 0, fv: 0.8, fs: 1.55, bg: '#0F2219', ink: '#F4F6F1' },
-  { bx: 0, by: -0.75, bs: 1.0, rx: 0.55, lab: 0, scan: 0, ring: 0, fv: 1, fs: 1.0, bg: '#0D1712', ink: '#F4F6F1' },
+  { bx: -1.7, by: -0.1, bs: 0.85, rx: 0.45, lab: 0, scan: 0, ring: 0, fv: 0.8, fs: 1.55, bg: '#2A1812', ink: '#F4F6F1' },
+  { bx: 0, by: -0.75, bs: 1.0, rx: 0.55, lab: 0, scan: 0, ring: 0, fv: 1, fs: 1.0, bg: '#1A120B', ink: '#F4F6F1' },
 ];
 const NUM = ['bx', 'by', 'bs', 'rx', 'lab', 'scan', 'ring', 'fv', 'fs'];
 const cur = { ...S[0] };
