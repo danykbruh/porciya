@@ -259,7 +259,9 @@ RING.forEach(o => {
 });
 
 // ---------- летающие ингредиенты ----------
-const floaters = new THREE.Group(); scene.add(floaters);
+// Летают в той же наклонной системе, что и миска (но не крутятся вместе с ней),
+// поэтому их легко держать снаружи миски и они не проходят сквозь неё.
+const floaters = new THREE.Group(); tilt.add(floaters);
 function makeFloater(type) {
   switch (type) {
     case 'tomato': { const m = new THREE.Mesh(new THREE.SphereGeometry(0.17, 32, 16), M.tomato); const s = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.05, 5), M.stem); s.position.y = 0.16; s.rotation.x = Math.PI; m.add(s); return m; }
@@ -275,9 +277,9 @@ const F = types.map((t, i) => {
   // Обёртка: масштаб анимируем у неё, чтобы не сбить форму листика или яйца
   const mesh = new THREE.Group(); mesh.add(makeFloater(t));
   // Раскладываем по «поясу» вокруг тарелки, равномерно по углу, чуть позади неё
-  const a = (i / types.length) * Math.PI * 2 + rnd(-0.2, 0.2);
-  const r = rnd(2.35, 3.0);
-  const base = new THREE.Vector3(Math.cos(a) * r, rnd(-1.0, 1.2), Math.sin(a) * r * 0.5 - 0.6);
+  const a = (i / types.length) * Math.PI * 2 + rnd(-0.15, 0.15);
+  const r = rnd(2.35, 2.9);                      // миска — радиус 1.73, запас на размер фрукта
+  const base = new THREE.Vector3(Math.cos(a) * r, rnd(-0.5, 1.0), Math.sin(a) * r);
   floaters.add(mesh);
   return { mesh, base, phase: Math.random() * 10, spin: new THREE.Vector3(rnd(-0.6, 0.6), rnd(-0.6, 0.6), rnd(-0.6, 0.6)), s: rnd(0.8, 1.15) };
 });
@@ -339,39 +341,64 @@ let bowlKcal = 564;
   bowl.scale.setScalar(k);
   bowl.position.y = 0.52 - bs.y * k / 2;                // верхний край на высоте 0.52
   // Высоту дна миски в любой точке узнаём лучом сверху вниз
+  bowl.traverse(o => { if (o.material) o.material.side = THREE.DoubleSide; }); // луч видит поверхность с любой стороны
   const tmp = new THREE.Scene(); tmp.add(bowl); tmp.updateMatrixWorld(true);
   const ray = new THREE.Raycaster();
+  const bottomY = 0.52 - bs.y * k + 0.08;               // примерная высота дна внутри
   const floor = (x, z) => {
     ray.set(new THREE.Vector3(x, 5, z), new THREE.Vector3(0, -1, 0));
     const hit = ray.intersectObject(bowl, true)[0];
-    return hit ? hit.point.y : 0;
+    if (hit) return hit.point.y;
+    const t = Math.min(1, Math.hypot(x, z) / 1.7);     // промах (край) — оцениваем по форме
+    return bottomY + (0.52 - bottomY) * t * t;
   };
   spin.add(bowl); codeBowl.visible = false;
 
   const protos = await Promise.all(BOWL.map(b => loadModel(b.id)));
   if (protos.filter(Boolean).length < 5) return;       // фруктов мало — оставляем поке
+  // Раскладка: фрукты не залезают друг в друга (раздвигаем по горизонтали)
+  // и опускаются, пока не коснутся дна или стенки миски.
   const placed = [];
   const fruitGroup = new THREE.Group();
+  const debug = [];
   BOWL.forEach((b, i) => {
     const p = protos[i]; if (!p) return;
-    const s = p.userData.size;
-    const r = Math.max(s.x, s.z) * k * FRUIT_SCALE / 2 * 0.85;        // радиус «шарика» для раскладки
-    const h = s.y * k * FRUIT_SCALE / 2;
-    let y = floor(b.x, b.z) + h;
-    // Кладём поверх соседей, если они мешают (как шарики в миске)
-    placed.forEach(q => {
-      const d = Math.hypot(b.x - q.x, b.z - q.z), rr = r + q.r;
-      if (d < rr) y = Math.max(y, q.y + Math.sqrt(rr * rr - d * d) * 0.8);
-    });
-    const c = p.clone(); c.scale.setScalar(k * FRUIT_SCALE);
-    c.position.set(b.x, y, b.z); c.rotation.y = b.ry;
+    const s = p.userData.size, kk = k * FRUIT_SCALE;
+    const rx = s.x * kk / 2, rz = s.z * kk / 2, h = s.y * kk / 2;
+    const fr = (rx + rz) / 2 * 0.92;                 // радиус «следа» фрукта
+    let x = b.x, z = b.z;
+    for (let it = 0; it < 40; it++) {
+      let moved = false;
+      placed.forEach(q => {
+        const dx = x - q.x, dz = z - q.z, d = Math.hypot(dx, dz) || 0.001, need = fr + q.fr;
+        if (d < need) { x += dx / d * (need - d) * 0.6; z += dz / d * (need - d) * 0.6; moved = true; }
+      });
+      const R = Math.hypot(x, z), maxR = 1.3 - fr * 0.6;
+      if (R > maxR) { x *= maxR / R; z *= maxR / R; }
+      if (!moved) break;
+    }
+    // Точка касания: низ фрукта (как эллипсоида) ложится на самую высокую точку дна под ним
+    let y = -Infinity;
+    for (let ring = 0; ring <= 3; ring++) {
+      const d = fr * ring / 3, n = ring ? 10 : 1;
+      for (let j = 0; j < n; j++) {
+        const t = j / n * Math.PI * 2;
+        const fy = floor(x + Math.cos(t) * d, z + Math.sin(t) * d);
+        y = Math.max(y, fy + h * Math.sqrt(Math.max(0, 1 - (d / fr) ** 2)));
+      }
+    }
+    y -= 0.015;                                         // чуть «вдавливаем», чтобы не было щели
+    const c = p.clone(); c.scale.setScalar(kk);
+    c.position.set(x, y, z); c.rotation.y = b.ry;
     fruitGroup.add(c);
-    placed.push({ x: b.x, z: b.z, y, r });
+    placed.push({ x, z, fr });
+    debug.push({ id: b.id, x: +x.toFixed(2), y: +y.toFixed(2), z: +z.toFixed(2), floor: +floor(x, z).toFixed(2) });
     if (b.tag) {
-      const o = new THREE.Object3D(); o.position.set(b.x, y + h + 0.05, b.z); fruitGroup.add(o);
+      const o = new THREE.Object3D(); o.position.set(x, y + h + 0.05, z); fruitGroup.add(o);
       b.anchor = o;
     }
   });
+  window.porciyaDebug = debug;
   spin.add(fruitGroup); food.visible = false;
   // Подписи сканера — под фрукты
   const tagged = BOWL.filter(b => b.anchor);
@@ -497,16 +524,18 @@ function tick() {
   counts.forEach((el, i) => el.textContent = Math.round(RING[i].target * 100 * smooth(i * 0.12, 0.64 + i * 0.12, cur.ring)));
 
   // летающие ингредиенты
-  floaters.position.set(cur.bx, cur.by, 0);
   F.forEach((f, i) => {
-    const s = f.s * Math.max(0, Math.min(1, cur.fv * 1.4 - i * 0.02)) * cur.bs;
+    const s = f.s * Math.max(0, Math.min(1, cur.fv * 1.4 - i * 0.02));
     f.mesh.visible = s > 0.01;
     if (!f.mesh.visible) return;
     const w = reduceMotion ? 0 : time;
+    const spread = Math.max(1, cur.fs);          // только наружу, внутрь миски — никогда
+    const ang = Math.atan2(f.base.z, f.base.x) + (reduceMotion ? 0 : w * 0.05);
+    const rad = Math.hypot(f.base.x, f.base.z) * spread;
     f.mesh.position.set(
-      f.base.x * cur.fs * cur.bs + Math.sin(w * 0.6 + f.phase) * 0.12,
-      f.base.y * (0.6 + 0.4 * cur.fs) * cur.bs + Math.sin(w * 0.9 + f.phase) * 0.16,
-      f.base.z * cur.bs);
+      Math.cos(ang) * rad,
+      f.base.y + Math.sin(w * 0.9 + f.phase) * 0.14,
+      Math.sin(ang) * rad);
     f.mesh.rotation.set(f.spin.x * w + f.phase, f.spin.y * w, f.spin.z * w);
     f.mesh.scale.setScalar(s);
   });
