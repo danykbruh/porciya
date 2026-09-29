@@ -241,8 +241,8 @@ anchor('rice', 0.05, surf(0, 0) + 0.05, 0.9);
 const rings = new THREE.Group(); root.add(rings);
 const RING = [
   { r: 1.9, color: 0xA6E3BC, target: 0.72 },
-  { r: 2.12, color: 0xF0876A, target: 0.55 },
-  { r: 2.34, color: 0xE7A6C0, target: 0.84 },
+  { r: 2.12, color: 0xD4B06E, target: 0.55 },
+  { r: 2.34, color: 0xF0876A, target: 0.84 },
 ];
 const geoCache = new Map();
 function arcGeo(r, arc) {
