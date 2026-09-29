@@ -407,7 +407,9 @@ setTimeout(() => { if (!intro.drops.length) intro.floatTarget = 1; }, 6000);
       // и по её поверхности катится вниз, к своему месту
       const R = Math.hypot(x, z);
       const ang = R > 0.15 ? Math.atan2(z, x) : rnd(0, Math.PI * 2);
-      const sx = Math.cos(ang) * 1.42, sz = Math.sin(ang) * 1.42;
+      // старт у края, но так, чтобы фрукт целиком был внутри миски (крупным — ближе к центру)
+      const sR = Math.max(R + 0.3, 1.5 - fr * 1.05);
+      const sx = Math.cos(ang) * sR, sz = Math.sin(ang) * sR;
       const path = [];
       for (let q = 0; q <= 24; q++) {
         const u = q / 24, px = sx + (x - sx) * u, pz = sz + (z - sz) * u;
