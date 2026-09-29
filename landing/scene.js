@@ -319,18 +319,16 @@ F.forEach((f, i) => {
 
 // Что лежит в миске: модель, место (x, z), поворот и подпись для сканера
 const BOWL = [
-  { id: 'food_avocado_01', x: -0.5, z: 0.2, ry: 0.5, tag: ['Авокадо', 240] },
-  { id: 'food_pomegranate_01', x: 0.55, z: -0.35, ry: 1.2, tag: ['Гранат', 230] },
-  { id: 'food_apple_01', x: 0.55, z: 0.55, ry: 2.0, tag: ['Яблоко', 95] },
-  { id: 'food_kiwi_01', x: -0.95, z: -0.3, ry: 0.9, tag: ['Киви', 42] },
-  { id: 'lemon', x: -0.2, z: -0.7, ry: 2.6 },
-  { id: 'food_lime_01', x: 1.0, z: 0.1, ry: 0.3 },
-  { id: 'food_kiwi_01', x: -0.15, z: 0.85, ry: 2.2 },
-  { id: 'food_lime_01', x: -0.85, z: 0.75, ry: 1.7 },
-  { id: 'food_lychee_01', x: 0.1, z: 0.05, ry: 0.0, tag: ['Личи', 20] },
-  { id: 'food_lychee_01', x: 0.3, z: 0.2, ry: 1.0 },
-  { id: 'food_lychee_01', x: 0.12, z: 0.3, ry: 2.0 },
+  { id: 'food_avocado_01', x: -0.35, z: 0.1, ry: 0.3, tag: ['Авокадо', 240] },
+  { id: 'food_pomegranate_01', x: 0.6, z: -0.35, ry: 1.2, tag: ['Гранат', 230] },
+  { id: 'food_apple_01', x: 0.55, z: 0.45, ry: 2.0, tag: ['Яблоко', 95] },
+  { id: 'food_kiwi_01', x: -0.55, z: -0.6, ry: 1.2, tag: ['Киви', 42] },
+  { id: 'lemon', x: 0.05, z: -0.75, ry: 2.6, tag: ['Лимон', 17] },
+  { id: 'food_lime_01', x: -0.6, z: 0.72, ry: 1.7 },
+  { id: 'food_lychee_01', x: 0.08, z: 0.72, ry: 0.0 },
+  { id: 'food_lychee_01', x: -0.12, z: 0.92, ry: 1.0 },
 ];
+const FRUIT_SCALE = 0.8; // фрукты чуть меньше настоящих — так миска смотрится аккуратнее
 let bowlKcal = 564;
 
 (async () => {
@@ -357,15 +355,15 @@ let bowlKcal = 564;
   BOWL.forEach((b, i) => {
     const p = protos[i]; if (!p) return;
     const s = p.userData.size;
-    const r = Math.max(s.x, s.z) * k / 2 * 0.85;        // радиус «шарика» для раскладки
-    const h = s.y * k / 2;
+    const r = Math.max(s.x, s.z) * k * FRUIT_SCALE / 2 * 0.85;        // радиус «шарика» для раскладки
+    const h = s.y * k * FRUIT_SCALE / 2;
     let y = floor(b.x, b.z) + h;
     // Кладём поверх соседей, если они мешают (как шарики в миске)
     placed.forEach(q => {
       const d = Math.hypot(b.x - q.x, b.z - q.z), rr = r + q.r;
       if (d < rr) y = Math.max(y, q.y + Math.sqrt(rr * rr - d * d) * 0.8);
     });
-    const c = p.clone(); c.scale.setScalar(k);
+    const c = p.clone(); c.scale.setScalar(k * FRUIT_SCALE);
     c.position.set(b.x, y, b.z); c.rotation.y = b.ry;
     fruitGroup.add(c);
     placed.push({ x: b.x, z: b.z, y, r });
