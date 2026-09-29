@@ -277,9 +277,12 @@ const F = types.map((t, i) => {
   // Обёртка: масштаб анимируем у неё, чтобы не сбить форму листика или яйца
   const mesh = new THREE.Group(); mesh.add(makeFloater(t));
   // Раскладываем по «поясу» вокруг тарелки, равномерно по углу, чуть позади неё
-  const a = (i / types.length) * Math.PI * 2 + rnd(-0.15, 0.15);
-  const r = rnd(2.35, 2.9);                      // миска — радиус 1.73, запас на размер фрукта
-  const base = new THREE.Vector3(Math.cos(a) * r, rnd(-0.5, 1.0), Math.sin(a) * r);
+  // Только по бокам от миски (слева и справа): спереди и сзади фрукты
+  // визуально наезжали бы на миску, будто проходят сквозь неё
+  const side = i % 2 ? Math.PI : 0;
+  const a = side + (Math.floor(i / 2) / (types.length / 2 - 1) - 0.5) * 1.3;
+  const r = rnd(2.6, 3.3);
+  const base = new THREE.Vector3(Math.cos(a) * r, rnd(-0.4, 1.1), Math.sin(a) * r * 0.35);
   floaters.add(mesh);
   return { mesh, base, phase: Math.random() * 10, spin: new THREE.Vector3(rnd(-0.6, 0.6), rnd(-0.6, 0.6), rnd(-0.6, 0.6)), s: rnd(0.8, 1.15) };
 });
@@ -530,12 +533,10 @@ function tick() {
     if (!f.mesh.visible) return;
     const w = reduceMotion ? 0 : time;
     const spread = Math.max(1, cur.fs);          // только наружу, внутрь миски — никогда
-    const ang = Math.atan2(f.base.z, f.base.x) + (reduceMotion ? 0 : w * 0.05);
-    const rad = Math.hypot(f.base.x, f.base.z) * spread;
     f.mesh.position.set(
-      Math.cos(ang) * rad,
+      f.base.x * spread + Math.sin(w * 0.6 + f.phase) * 0.08,
       f.base.y + Math.sin(w * 0.9 + f.phase) * 0.14,
-      Math.sin(ang) * rad);
+      f.base.z);
     f.mesh.rotation.set(f.spin.x * w + f.phase, f.spin.y * w, f.spin.z * w);
     f.mesh.scale.setScalar(s);
   });
