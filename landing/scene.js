@@ -10,11 +10,6 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-// ---------- появление текста (работает даже без WebGL) ----------
-const io = new IntersectionObserver(es => es.forEach(e => {
-  if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-}), { threshold: 0.2 });
-$$('.reveal').forEach(el => io.observe(el));
 
 // ---------- рендерер ----------
 const canvas = $('#scene');
@@ -321,11 +316,11 @@ loader.load('models/wooden_bowl_01/wooden_bowl_01_1k.gltf', gltf => {
   const model = gltf.scene;
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
-  const k = 3.05 / Math.max(size.x, size.z);          // ширина как у тарелки из кода
+  const k = 3.45 / Math.max(size.x, size.z);          // чуть шире тарелки из кода, чтобы рис лёг внутрь
   model.position.set(-center.x, -box.min.y, -center.z); // дно на нуле
   const holder = new THREE.Group(); holder.add(model);
   holder.scale.setScalar(k);
-  holder.position.y = 0.44 - size.y * k;               // верхний край там же, где был
+  holder.position.y = 0.52 - size.y * k;               // край чуть выше еды
   spin.add(holder);
   codeBowl.visible = false;
 }, undefined, () => {});

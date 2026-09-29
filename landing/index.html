@@ -11,7 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=7">
+<script>document.documentElement.classList.add("js")</script>
+<link rel="stylesheet" href="style.css?v=8">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -42,7 +43,7 @@
     <img src="../icons/icon.svg" alt="" width="30" height="30">
     <span>Порция</span>
   </a>
-  <a class="btn btn-sm" href="../">Открыть приложение</a>
+  <a class="btn btn-sm" href="../">Открыть<span class="hide-sm"> приложение</span></a>
   <div class="progress"><i></i></div>
 </header>
 
@@ -132,6 +133,17 @@
 
 </main>
 
-<script type="module" src="scene.js?v=7"></script>
+<script>
+// Плавное появление текста. Работает сразу, не дожидаясь загрузки 3D.
+(function () {
+  var els = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) { els.forEach(function (el) { el.classList.add('in'); }); return; }
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  els.forEach(function (el) { io.observe(el); });
+})();
+</script>
+<script type="module" src="scene.js?v=8"></script>
 </body>
 </html>

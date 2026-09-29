@@ -93,8 +93,8 @@ h2{font-size:clamp(36px,4.6vw,64px);line-height:1.02}
 footer{position:absolute;left:0;right:0;bottom:24px;text-align:center;font-size:13px;opacity:.55}
 
 /* ---------- появление текста ---------- */
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
-.reveal.in{opacity:1;transform:none}
+.js .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.js .reveal.in{opacity:1;transform:none}
 .cards .reveal:nth-child(2),.notes .reveal:nth-child(2){transition-delay:.1s}
 .cards .reveal:nth-child(3),.notes .reveal:nth-child(3){transition-delay:.2s}
 .cards .reveal:nth-child(4){transition-delay:.3s}
@@ -151,6 +151,8 @@ footer{position:absolute;left:0;right:0;bottom:24px;text-align:center;font-size:
 
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  .reveal{transition:none;opacity:1;transform:none}
+  .js .reveal{transition:none;opacity:1;transform:none}
   .scanline,.pulse,.scrollhint::after{animation:none}
 }
+
+@media (max-width:420px){.hide-sm{display:none}}
