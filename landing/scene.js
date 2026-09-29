@@ -336,6 +336,19 @@ const BOWL = [
 const FRUIT_SCALE = 0.8; // фрукты чуть меньше настоящих — так миска смотрится аккуратнее
 let bowlKcal = 564;
 
+// ---------- вступление: фрукты падают в пустую миску ----------
+const intro = { start: 0, drops: [], floatK: reduceMotion ? 1 : 0, floatTarget: reduceMotion ? 1 : 0 };
+// Если модели так и не загрузились — через 6 секунд просто показываем летающие ингредиенты
+setTimeout(() => { if (!intro.drops.length) intro.floatTarget = 1; }, 6000);
+// Падение с отскоком: быстро вниз, пара затухающих подпрыгиваний
+function bounce(t) {
+  const n = 7.5625, d = 2.75;
+  if (t < 1 / d) return n * t * t;
+  if (t < 2 / d) return n * (t -= 1.5 / d) * t + 0.75;
+  if (t < 2.5 / d) return n * (t -= 2.25 / d) * t + 0.9375;
+  return n * (t -= 2.625 / d) * t + 0.984375;
+}
+
 (async () => {
   const bowl = await loadModel('wooden_bowl_01');
   if (!bowl) return;                                   // миски нет — остаётся тарелка из кода
@@ -356,9 +369,10 @@ let bowlKcal = 564;
     return bottomY + (0.52 - bottomY) * t * t;
   };
   spin.add(bowl); codeBowl.visible = false;
+  food.visible = false;                                // миска пока пустая — фрукты упадут в неё
 
   const protos = await Promise.all(BOWL.map(b => loadModel(b.id)));
-  if (protos.filter(Boolean).length < 5) return;       // фруктов мало — оставляем поке
+  if (protos.filter(Boolean).length < 5) { food.visible = true; intro.floatTarget = 1; return; } // фруктов мало — оставляем поке
   // Раскладка: фрукты не залезают друг в друга (раздвигаем по горизонтали)
   // и опускаются, пока не коснутся дна или стенки миски.
   const placed = [];
@@ -393,6 +407,10 @@ let bowlKcal = 564;
     y -= 0.015;                                         // чуть «вдавливаем», чтобы не было щели
     const c = p.clone(); c.scale.setScalar(kk);
     c.position.set(x, y, z); c.rotation.y = b.ry;
+    if (!reduceMotion) {
+      c.visible = false;
+      intro.drops.push({ obj: c, y, delay: 0.2 + intro.drops.length * 0.16, h: rnd(2.6, 3.4), rx: rnd(-1.4, 1.4), rz: rnd(-1.4, 1.4) });
+    }
     fruitGroup.add(c);
     placed.push({ x, z, fr });
     debug.push({ id: b.id, x: +x.toFixed(2), y: +y.toFixed(2), z: +z.toFixed(2), floor: +floor(x, z).toFixed(2) });
@@ -403,6 +421,8 @@ let bowlKcal = 564;
   });
   window.porciyaDebug = debug;
   spin.add(fruitGroup); food.visible = false;
+  intro.start = clock.elapsedTime;
+  if (!intro.drops.length) intro.floatTarget = 1;
   // Подписи сканера — под фрукты
   const tagged = BOWL.filter(b => b.anchor);
   tags.forEach((t, i) => {
@@ -489,6 +509,24 @@ const clock = new THREE.Clock();
 let spinAngle = 0, lastActive = -1, lastBg = '';
 function tick() {
   const dt = Math.min(clock.getDelta(), 0.05), time = clock.elapsedTime;
+
+  // вступление: падение фруктов, потом плавно появляются летающие
+  if (intro.drops.length) {
+    const T0 = time - intro.start;
+    let done = true;
+    intro.drops.forEach(d => {
+      const t = (T0 - d.delay) / 0.9;
+      if (t < 0) { d.obj.visible = false; done = false; return; }
+      const k1 = Math.min(1, t);
+      d.obj.visible = true;
+      d.obj.position.y = d.y + (1 - bounce(k1)) * d.h;
+      const w = (1 - k1) * (1 - k1);                   // кувыркание затухает к приземлению
+      d.obj.rotation.x = d.rx * w; d.obj.rotation.z = d.rz * w;
+      if (t < 1) done = false;
+    });
+    if (done) { intro.drops = []; intro.floatTarget = 1; }
+  }
+  intro.floatK += (intro.floatTarget - intro.floatK) * (1 - Math.exp(-dt * 2.2));
   const T = targetState();
   const k = reduceMotion ? 1 : 1 - Math.exp(-dt * 5);
   NUM.forEach(n => cur[n] += (T[n] - cur[n]) * k);
@@ -538,7 +576,7 @@ function tick() {
       f.base.y + Math.sin(w * 0.9 + f.phase) * 0.14,
       f.base.z);
     f.mesh.rotation.set(f.spin.x * w + f.phase, f.spin.y * w, f.spin.z * w);
-    f.mesh.scale.setScalar(s);
+    f.mesh.scale.setScalar(s * intro.floatK);
   });
 
   renderer.render(scene, camera);
