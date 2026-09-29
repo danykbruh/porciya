@@ -64,7 +64,7 @@ async function start() {
   if (!protos.length) return; // модели не загрузились — остаётся просто кофейный фон
 
   const narrow = () => innerWidth / innerHeight < 0.9;
-  const COUNT = narrow() ? 12 : 18;
+  const COUNT = narrow() ? 12 : 20;
   const fruits = [];
   for (let i = 0; i < COUNT; i++) {
     const p = protos[i % protos.length];
@@ -76,7 +76,7 @@ async function start() {
     fruits.push({
       wrap, obj, base: size / p.userData.max,
       a: (i / COUNT) * Math.PI * 2 + rnd(-0.1, 0.1),        // место на кольце
-      r: rnd(4.2, 5.6),                                      // радиус кольца
+      r: i % 3 === 0 ? rnd(4.2, 5.1) : rnd(2.5, 3.8),       // большинство ближе к центру, треть — по краям
       y: rnd(-1.6, 1.6),                                     // высота
       spin: new THREE.Vector3(rnd(-0.5, 0.5), rnd(-0.5, 0.5), rnd(-0.3, 0.3)),
       ph: Math.random() * 10,
