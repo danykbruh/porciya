@@ -109,6 +109,7 @@ for (let k = 0; k <= 20; k++) {
 }
 // Запасная тарелка из кода: видна, пока грузится настоящая модель (или если её нет)
 const codeBowl = new THREE.Group(); spin.add(codeBowl);
+codeBowl.visible = false; // показываем, только если настоящая миска не загрузится
 codeBowl.add(new THREE.Mesh(new THREE.LatheGeometry(outerPts, 96), M.glaze));
 codeBowl.add(new THREE.Mesh(new THREE.LatheGeometry(innerPts, 96), M.inner));
 const rim = new THREE.Mesh(new THREE.TorusGeometry(1.46, 0.028, 16, 128), M.gold);
@@ -120,6 +121,7 @@ shadow.rotation.x = -Math.PI / 2; shadow.position.y = -0.56; tilt.add(shadow);
 
 // Еда из кода (поке): видна, пока не загрузилась настоящая фруктовая тарелка
 const food = new THREE.Group(); spin.add(food);
+food.visible = false;
 // Горка риса: высота поверхности в точке (x, z)
 const RR = 1.3;
 const surf = (x, z) => 0.16 + 0.2 * Math.sqrt(Math.max(0, 1 - (x * x + z * z) / (RR * RR)));
@@ -276,13 +278,11 @@ const types = ['tomato', 'lemon', 'leaf', 'salmon', 'bean', 'leaf', 'tomato', 'e
 const F = types.map((t, i) => {
   // Обёртка: масштаб анимируем у неё, чтобы не сбить форму листика или яйца
   const mesh = new THREE.Group(); mesh.add(makeFloater(t));
-  // Раскладываем по «поясу» вокруг тарелки, равномерно по углу, чуть позади неё
-  // Только по бокам от миски (слева и справа): спереди и сзади фрукты
-  // визуально наезжали бы на миску, будто проходят сквозь неё
-  const side = i % 2 ? Math.PI : 0;
-  const a = side + (Math.floor(i / 2) / (types.length / 2 - 1) - 0.5) * 1.3;
-  const r = rnd(2.6, 3.3);
-  const base = new THREE.Vector3(Math.cos(a) * r, rnd(-0.4, 1.1), Math.sin(a) * r * 0.35);
+  // Кружат вокруг миски по кольцу. Радиус больше радиуса миски (1.73) с запасом
+  // на размер фрукта, поэтому они проходят спереди и сзади, но никогда не сквозь неё.
+  const a = (i / types.length) * Math.PI * 2 + rnd(-0.12, 0.12);
+  const r = rnd(2.55, 3.15);
+  const base = new THREE.Vector3(Math.cos(a) * r, rnd(-0.3, 0.9), Math.sin(a) * r);
   floaters.add(mesh);
   return { mesh, base, phase: Math.random() * 10, spin: new THREE.Vector3(rnd(-0.6, 0.6), rnd(-0.6, 0.6), rnd(-0.6, 0.6)), s: rnd(0.8, 1.15) };
 });
@@ -337,13 +337,16 @@ const FRUIT_SCALE = 0.8; // фрукты чуть меньше настоящи�
 let bowlKcal = 564;
 
 // ---------- вступление: фрукты скатываются в пустую миску ----------
-const intro = { start: 0, drops: [], floatK: reduceMotion ? 1 : 0, floatTarget: reduceMotion ? 1 : 0 };
-// Если модели так и не загрузились — через 6 секунд просто показываем летающие ингредиенты
-setTimeout(() => { if (!intro.drops.length) intro.floatTarget = 1; }, 6000);
+const intro = { t: 0, running: false, drops: [], floatK: reduceMotion ? 1 : 0, floatTarget: reduceMotion ? 1 : 0 };
+let bowlReady = false;
+// Если настоящая миска долго не грузится (медленный интернет) — показываем запасную из кода
+function showFallback() { codeBowl.visible = true; food.visible = true; intro.floatTarget = 1; }
+setTimeout(() => { if (!bowlReady) showFallback(); }, 10000);
 
 (async () => {
   const bowl = await loadModel('wooden_bowl_01');
-  if (!bowl) return;                                   // миски нет — остаётся тарелка из кода
+  if (!bowl) { showFallback(); return; }              // миски нет — тарелка из кода
+  bowlReady = true;
   const bs = bowl.userData.size;
   const k = 3.45 / Math.max(bs.x, bs.z);                // метры → единицы сцены
   bowl.scale.setScalar(k);
@@ -364,7 +367,7 @@ setTimeout(() => { if (!intro.drops.length) intro.floatTarget = 1; }, 6000);
   food.visible = false;                                // миска пока пустая — фрукты упадут в неё
 
   const protos = await Promise.all(BOWL.map(b => loadModel(b.id)));
-  if (protos.filter(Boolean).length < 5) { food.visible = true; intro.floatTarget = 1; return; } // фруктов мало — оставляем поке
+  if (protos.filter(Boolean).length < 5) { codeBowl.visible = false; food.visible = true; intro.floatTarget = 1; return; } // фруктов мало — оставляем поке
   // Раскладка: фрукты не залезают друг в друга (раздвигаем по горизонтали)
   // и опускаются, пока не коснутся дна или стенки миски.
   const placed = [];
@@ -437,7 +440,20 @@ setTimeout(() => { if (!intro.drops.length) intro.floatTarget = 1; }, 6000);
   intro.drops.sort((a, b) => a.R - b.R);                // сначала в центр, потом к краям — пути не пересекаются
   intro.drops.forEach((d, i) => { d.delay = 0.2 + i * 0.22; });
   spin.add(fruitGroup); food.visible = false;
-  intro.start = clock.elapsedTime;
+  // Заранее готовим шейдеры и текстуры фруктов: иначе первый кадр «подвисает»,
+  // и анимация пропускается. Время анимации считаем только по плавным кадрам.
+  try {
+    fruitGroup.traverse(o => {
+      if (!o.isMesh) return;
+      const was = o.visible; o.visible = true;
+      ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap'].forEach(k => { if (o.material[k]) renderer.initTexture(o.material[k]); });
+      o.visible = was;
+    });
+    intro.drops.forEach(d => d.obj.visible = true);
+    renderer.compile(scene, camera);
+    intro.drops.forEach(d => d.obj.visible = false);
+  } catch (e) { /* не страшно — просто без подготовки */ }
+  intro.t = -0.15; intro.running = true;
   if (!intro.drops.length) intro.floatTarget = 1;
   // Подписи сканера — под фрукты
   const tagged = BOWL.filter(b => b.anchor);
@@ -527,8 +543,9 @@ function tick() {
   const dt = Math.min(clock.getDelta(), 0.05), time = clock.elapsedTime;
 
   // вступление: падение фруктов, потом плавно появляются летающие
-  if (intro.drops.length) {
-    const T0 = time - intro.start;
+  if (intro.drops.length && intro.running) {
+    intro.t += dt;                                    // dt уже ограничен 0.05 с — подвисание не «съест» анимацию
+    const T0 = intro.t;
     let done = true;
     intro.drops.forEach(d => {
       const t = (T0 - d.delay) / 1.7;                   // 1.7 с на фрукт: опуститься и скатиться
@@ -601,10 +618,12 @@ function tick() {
     if (!f.mesh.visible) return;
     const w = reduceMotion ? 0 : time;
     const spread = Math.max(1, cur.fs);          // только наружу, внутрь миски — никогда
+    const ang = Math.atan2(f.base.z, f.base.x) + w * 0.12; // медленно облетают миску
+    const rad = Math.hypot(f.base.x, f.base.z) * spread;
     f.mesh.position.set(
-      f.base.x * spread + Math.sin(w * 0.6 + f.phase) * 0.08,
+      Math.cos(ang) * rad,
       f.base.y + Math.sin(w * 0.9 + f.phase) * 0.14,
-      f.base.z);
+      Math.sin(ang) * rad);
     f.mesh.rotation.set(f.spin.x * w + f.phase, f.spin.y * w, f.spin.z * w);
     f.mesh.scale.setScalar(s * intro.floatK);
   });
