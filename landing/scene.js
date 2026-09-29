@@ -332,16 +332,15 @@ F.forEach((f, i) => {
 
 // Что лежит в миске: модель, место (x, z), поворот и подпись для сканера
 const BOWL = [
-  { id: 'food_avocado_01', x: -0.35, z: 0.1, ry: 0.3, tag: ['Авокадо', 240] },
-  { id: 'food_pomegranate_01', x: 0.6, z: -0.35, ry: 1.2, tag: ['Гранат', 230] },
-  { id: 'food_apple_01', x: 0.55, z: 0.45, ry: 2.0, tag: ['Яблоко', 95] },
-  { id: 'food_kiwi_01', x: -0.55, z: -0.6, ry: 1.2, tag: ['Киви', 42] },
-  { id: 'lemon', x: 0.05, z: -0.75, ry: 2.6, tag: ['Лимон', 17] },
-  { id: 'food_lime_01', x: -0.6, z: 0.72, ry: 1.7 },
-  { id: 'food_lychee_01', x: 0.08, z: 0.72, ry: 0.0 },
-  { id: 'food_lychee_01', x: -0.12, z: 0.92, ry: 1.0 },
+  { id: 'food_avocado_01', x: -0.3, z: 0.05, ry: 0.3, tag: ['Авокадо', 240] },
+  { id: 'food_pomegranate_01', x: 0.45, z: -0.3, ry: 1.2, tag: ['Гранат', 230] },
+  { id: 'food_apple_01', x: 0.45, z: 0.45, ry: 2.0, tag: ['Яблоко', 95] },
+  { id: 'food_kiwi_01', x: -0.55, z: -0.45, ry: 1.2, tag: ['Киви', 42] },
+  { id: 'lemon', x: 0.0, z: 0.7, ry: 1.4, tag: ['Лимон', 17] },
+  { id: 'food_lime_01', x: -0.72, z: 0.45, ry: 1.7 },
+  { id: 'food_lychee_01', x: 0.05, z: -0.62, ry: 0.0 },
 ];
-const FRUIT_SCALE = 0.8; // фрукты чуть меньше настоящих — так миска смотрится аккуратнее
+const FRUIT_SCALE = 0.7; // фрукты чуть меньше настоящих — так миска смотрится аккуратнее
 let bowlKcal = 564;
 
 // ---------- вступление: фрукты скатываются в пустую миску ----------
@@ -393,7 +392,7 @@ setTimeout(() => { if (!bowlReady) showFallback(); }, 10000);
         const dx = x - q.x, dz = z - q.z, d = Math.hypot(dx, dz) || 0.001, need = fr + q.fr;
         if (d < need) { x += dx / d * (need - d) * 0.6; z += dz / d * (need - d) * 0.6; moved = true; }
       });
-      const R = Math.hypot(x, z), maxR = 1.3 - fr * 0.6;
+      const R = Math.hypot(x, z), maxR = 1.1 - fr * 0.6;   // держим фрукты ближе к ровному дну, подальше от крутых стенок
       if (R > maxR) { x *= maxR / R; z *= maxR / R; }
       if (!moved) break;
     }
@@ -408,7 +407,7 @@ setTimeout(() => { if (!bowlReady) showFallback(); }, 10000);
           y = Math.max(y, fy + h * Math.sqrt(Math.max(0, 1 - (d / fr) ** 2)));
         }
       }
-      return y - 0.015;                                 // чуть «вдавливаем», чтобы не было щели
+      return y - 0.035;                                 // чуть «вдавливаем», чтобы не было щели
     };
     const y = contact(x, z);
     const c = p.clone(); c.scale.setScalar(kk);
@@ -630,7 +629,8 @@ function step() {
     const rad = Math.hypot(f.base.x, f.base.z) * spread;
     f.mesh.position.set(
       Math.cos(ang) * rad,
-      f.base.y + Math.sin(w * 0.9 + f.phase) * 0.14,
+      // спереди (ближе к зрителю) орбита поднимается выше миски — фрукты не висят под ней
+      f.base.y + Math.max(0, Math.sin(ang)) * 1.5 + Math.sin(w * 0.9 + f.phase) * 0.14,
       Math.sin(ang) * rad);
     f.mesh.rotation.set(f.spin.x * w + f.phase, f.spin.y * w, f.spin.z * w);
     f.mesh.scale.setScalar(s * intro.floatK);
