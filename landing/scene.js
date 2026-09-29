@@ -652,6 +652,7 @@ function step() {
   if (loaderEl && !loaderEl.classList.contains('done')) {
     const c = new THREE.Vector3(); root.getWorldPosition(c); c.project(camera);
     loaderEl.style.transform = `translate(${(c.x + 1) / 2 * W}px,${(1 - c.y) / 2 * H}px) translate(-50%,-50%)`;
+    loaderEl.classList.add('on');
   }
 
   // подписи продуктов
@@ -669,7 +670,16 @@ function step() {
 }
 // Цикл кадров: даже если в одном кадре что-то сломалось, анимация не останавливается
 function tick() {
-  try { step(); } catch (e) { if (!tick.err) { console.error('Порция 3D:', e); tick.err = true; } }
+  try { step(); } catch (e) { if (!tick.err) { console.error('Порция 3D:', e); tick.err = String(e && e.stack || e); } }
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
+
+// Диагностика: в консоли браузера можно набрать porciya3d() и увидеть состояние сцены
+let ctxLost = false;
+canvas.addEventListener('webglcontextlost', () => { ctxLost = true; });
+window.porciya3d = () => ({
+  bowlReady, introRunning: intro.running, dropsLeft: intro.drops.length, floatK: +intro.floatK.toFixed(2),
+  root: root.position.toArray().map(v => +v.toFixed(2)), scale: +root.scale.x.toFixed(2),
+  ctxLost, error: tick.err || null,
+});
