@@ -16,6 +16,8 @@ document.addEventListener('visibilitychange', sync);
 sync();
 
 function sync() {
+  // Показываем холст только на экране входа (не зависим от того, успел ли обновиться CSS)
+  canvas.style.display = signedOut() ? 'block' : 'none';
   const want = signedOut() && !document.hidden;
   if (want && !started) { started = true; start().catch(e => console.warn('Порция 3D-фон:', e)); }
   if (want && ctx && !running) { running = true; ctx.clock.getDelta(); rafId = requestAnimationFrame(loop); }
