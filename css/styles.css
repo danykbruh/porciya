@@ -303,3 +303,33 @@ body.signed-out .acct{display:none}
 .sheet a{color:var(--accent)}
 .sclabel{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding-top:4px;border-top:1px solid var(--line)}
 .sclabel p{margin:0}
+
+/* ---- Экран входа: кофейный фон, 3D-фрукты и стеклянная панель ---- */
+#authBg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none}
+.wrap{position:relative;z-index:1}
+body.signed-out{
+  --bg:#1E150D; --surface:rgba(34,24,15,.6);
+  --ink:#F4EFE6; --muted:#C2B4A1; --line:rgba(244,239,230,.16);
+  --accent:#D4B06E; --accent-ink:#1E150D; --accent-soft:rgba(212,176,110,.18);
+  color:var(--ink);
+  background:#1E150D radial-gradient(ellipse 70% 60% at 50% 42%,rgba(212,176,110,.13),transparent 70%) fixed;
+  min-height:100vh;min-height:100svh;
+}
+body.signed-out #authBg{display:block}
+body.signed-out .logo .lg-ticks path{stroke:#1E150D}
+body.signed-out .authcard{
+  background:rgba(34,24,15,.38);
+  border:1px solid rgba(244,239,230,.14);
+  -webkit-backdrop-filter:blur(16px) saturate(1.25);backdrop-filter:blur(16px) saturate(1.25);
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.06);
+  border-radius:20px;padding:22px;
+}
+body.signed-out .field input{background:rgba(255,248,238,.07);border-color:rgba(244,239,230,.18);color:var(--ink)}
+body.signed-out .field input::placeholder{color:rgba(244,239,230,.4)}
+body.signed-out .field input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(212,176,110,.22)}
+body.signed-out .seg span{border-color:rgba(244,239,230,.2)}
+body.signed-out .afpolicy{background:rgba(20,14,9,.5)}
+body.signed-out .submit{box-shadow:0 10px 26px -12px rgba(212,176,110,.7)}
+/* Автозаполнение браузера не должно заливать поля ярко-синим */
+body.signed-out .field input:-webkit-autofill{-webkit-text-fill-color:var(--ink);transition:background-color 9999s;box-shadow:0 0 0 40px rgba(40,29,19,.9) inset}
+@media (min-height:640px){body.signed-out .wrap{padding-top:8vh}}
