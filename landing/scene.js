@@ -272,11 +272,12 @@ function makeFloater(type) {
 }
 const types = ['tomato', 'lemon', 'leaf', 'salmon', 'bean', 'leaf', 'tomato', 'egg', 'lemon', 'bean', 'leaf', 'tomato', 'salmon', 'leaf'];
 const F = types.map((t, i) => {
-  const mesh = makeFloater(t);
-  // Раскладываем по «поясу» вокруг тарелки, равномерно по углу
+  // Обёртка: масштаб анимируем у неё, чтобы не сбить форму листика или яйца
+  const mesh = new THREE.Group(); mesh.add(makeFloater(t));
+  // Раскладываем по «поясу» вокруг тарелки, равномерно по углу, чуть позади неё
   const a = (i / types.length) * Math.PI * 2 + rnd(-0.2, 0.2);
-  const r = rnd(2.2, 3.1);
-  const base = new THREE.Vector3(Math.cos(a) * r, rnd(-1.1, 1.3), Math.sin(a) * r * 0.55 - 0.3);
+  const r = rnd(1.9, 2.6);
+  const base = new THREE.Vector3(Math.cos(a) * r, rnd(-1.0, 1.2), Math.sin(a) * r * 0.5 - 0.6);
   floaters.add(mesh);
   return { mesh, base, phase: Math.random() * 10, spin: new THREE.Vector3(rnd(-0.6, 0.6), rnd(-0.6, 0.6), rnd(-0.6, 0.6)), s: rnd(0.8, 1.15) };
 });
@@ -286,7 +287,7 @@ const F = types.map((t, i) => {
 //  lab — подписи, scan — рамка сканера, ring — кольца, fv — видимость ингредиентов, fs — их разлёт
 const S = [
   { bx: 1.55, by: -0.15, bs: 1.05, rx: 0.42, lab: 0, scan: 0, ring: 0, fv: 1, fs: 1.0, bg: '#F4F6F1', ink: '#14301F' },
-  { bx: -1.45, by: -0.1, bs: 1.0, rx: 0.8, lab: 1, scan: 1, ring: 0, fv: 0, fs: 0.5, bg: '#0F2418', ink: '#F4F6F1' },
+  { bx: -1.45, by: -0.15, bs: 0.86, rx: 0.8, lab: 1, scan: 1, ring: 0, fv: 0, fs: 0.5, bg: '#0F2418', ink: '#F4F6F1' },
   { bx: -1.5, by: 0, bs: 0.78, rx: 0.3, lab: 0, scan: 0, ring: 1, fv: 0, fs: 0.5, bg: '#F3EBDD', ink: '#14301F' },
   { bx: 1.75, by: -0.1, bs: 0.92, rx: 0.5, lab: 0, scan: 0, ring: 0, fv: 1, fs: 1.3, bg: '#E8A949', ink: '#14301F' },
   { bx: -1.7, by: -0.1, bs: 0.85, rx: 0.45, lab: 0, scan: 0, ring: 0, fv: 0.8, fs: 1.55, bg: '#1D4A30', ink: '#F4F6F1' },
@@ -326,6 +327,9 @@ function targetState() {
   bgA.set(a.bg); bgB.set(b.bg); t.bg = bgA.clone().lerp(bgB, u);
   inkA.set(a.ink); inkB.set(b.ink); t.ink = inkA.clone().lerp(inkB, u);
   t.active = u < 0.5 ? i : i + 1;
+  // На не очень широких экранах сдвигаем и уменьшаем тарелку, чтобы она не наезжала на текст
+  const f = Math.min(1.15, Math.max(0.55, Math.tan(THREE.MathUtils.degToRad(16)) * camDist * camera.aspect / 3.72));
+  t.bx *= f; t.bs *= Math.min(1, 0.25 + 0.75 * f);
   if (mobile) { // на телефоне тарелка всегда сверху по центру, текст снизу
     const topY = Math.tan(THREE.MathUtils.degToRad(16)) * camDist;
     t.bx = 0; t.by = topY * 0.36; t.bs *= 0.95 - 0.25 * t.ring;
@@ -413,8 +417,8 @@ function tick() {
     const e = c.clone().add(new THREE.Vector3(1.75 * cur.bs, 0, 0));
     c.project(camera); e.project(camera);
     const cx = (c.x + 1) / 2 * W, cy = (1 - c.y) / 2 * H, rad = Math.abs(e.x - c.x) / 2 * W;
-    frame.style.transform = `translate(${cx - rad}px,${cy - rad * 0.85}px)`;
-    frame.style.width = rad * 2 + 'px'; frame.style.height = rad * 1.7 + 'px';
+    frame.style.transform = `translate(${cx - rad}px,${cy - rad * 0.8}px)`;
+    frame.style.width = rad * 2 + 'px'; frame.style.height = rad * 1.6 + 'px';
   }
   frame.style.opacity = cur.scan;
 
