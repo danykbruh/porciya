@@ -307,6 +307,14 @@ function loadModel(id) {
   }, undefined, () => res(null)));
   return cache[id];
 }
+// Сначала грузим миску — она нужна первой; фрукты подтянутся следом
+const bowlPromise = loadModel('wooden_bowl_01');
+// Индикатор загрузки 3D (кольцо с процентами на месте миски)
+const loaderEl = $('.loader3d'), loaderPct = loaderEl && loaderEl.querySelector('b');
+THREE.DefaultLoadingManager.onProgress = (url, done, total) => {
+  if (loaderPct) loaderPct.textContent = Math.round(done / Math.max(1, total) * 100) + '%';
+};
+const hideLoader = () => loaderEl && loaderEl.classList.add('done');
 const FRUITS = ['food_avocado_01', 'food_pomegranate_01', 'food_apple_01', 'food_kiwi_01', 'lemon', 'food_lime_01', 'food_lychee_01'];
 
 // Летающие фрукты: заменяем нарисованные ингредиенты по мере загрузки
@@ -340,13 +348,13 @@ let bowlKcal = 564;
 const intro = { t: 0, running: false, drops: [], floatK: reduceMotion ? 1 : 0, floatTarget: reduceMotion ? 1 : 0 };
 let bowlReady = false;
 // Если настоящая миска долго не грузится (медленный интернет) — показываем запасную из кода
-function showFallback() { codeBowl.visible = true; food.visible = true; intro.floatTarget = 1; }
+function showFallback() { codeBowl.visible = true; food.visible = true; intro.floatTarget = 1; hideLoader(); }
 setTimeout(() => { if (!bowlReady) showFallback(); }, 10000);
 
 (async () => {
-  const bowl = await loadModel('wooden_bowl_01');
+  const bowl = await bowlPromise;
   if (!bowl) { showFallback(); return; }              // миски нет — тарелка из кода
-  bowlReady = true;
+  bowlReady = true; hideLoader();
   const bs = bowl.userData.size;
   const k = 3.45 / Math.max(bs.x, bs.z);                // метры → единицы сцены
   bowl.scale.setScalar(k);
@@ -539,7 +547,7 @@ function toScreen(obj, out = v) { obj.getWorldPosition(out); out.project(camera)
 // ---------- цикл ----------
 const clock = new THREE.Clock();
 let spinAngle = 0, lastActive = -1, lastBg = '';
-function tick() {
+function step() {
   const dt = Math.min(clock.getDelta(), 0.05), time = clock.elapsedTime;
 
   // вступление: падение фруктов, потом плавно появляются летающие
@@ -641,6 +649,10 @@ function tick() {
     frame.style.width = rad * 2 + 'px'; frame.style.height = rad * 1.6 + 'px';
   }
   frame.style.opacity = cur.scan;
+  if (loaderEl && !loaderEl.classList.contains('done')) {
+    const c = new THREE.Vector3(); root.getWorldPosition(c); c.project(camera);
+    loaderEl.style.transform = `translate(${(c.x + 1) / 2 * W}px,${(1 - c.y) / 2 * H}px) translate(-50%,-50%)`;
+  }
 
   // подписи продуктов
   tags.forEach((t, i) => {
@@ -654,6 +666,10 @@ function tick() {
   });
   totalEl.textContent = Math.round(bowlKcal * smooth(0.3, 1, cur.lab));
 
+}
+// Цикл кадров: даже если в одном кадре что-то сломалось, анимация не останавливается
+function tick() {
+  try { step(); } catch (e) { if (!tick.err) { console.error('Порция 3D:', e); tick.err = true; } }
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
