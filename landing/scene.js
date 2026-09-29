@@ -118,13 +118,15 @@ const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4, 4),
   new THREE.MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false, opacity: 0.5 }));
 shadow.rotation.x = -Math.PI / 2; shadow.position.y = -0.56; tilt.add(shadow);
 
+// Еда из кода (поке): видна, пока не загрузилась настоящая фруктовая тарелка
+const food = new THREE.Group(); spin.add(food);
 // Горка риса: высота поверхности в точке (x, z)
 const RR = 1.3;
 const surf = (x, z) => 0.16 + 0.2 * Math.sqrt(Math.max(0, 1 - (x * x + z * z) / (RR * RR)));
 const riceDome = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32, 0, Math.PI * 2, 0, Math.PI / 2), M.rice);
-riceDome.scale.set(RR, 0.2, RR); riceDome.position.y = 0.16; spin.add(riceDome);
+riceDome.scale.set(RR, 0.2, RR); riceDome.position.y = 0.16; food.add(riceDome);
 const riceFill = new THREE.Mesh(new THREE.CylinderGeometry(RR, 1.05, 0.3, 64), M.rice);
-riceFill.position.y = 0.01; spin.add(riceFill);
+riceFill.position.y = 0.01; food.add(riceFill);
 
 const rnd = (a, b) => a + Math.random() * (b - a);
 const dummy = new THREE.Object3D();
@@ -139,10 +141,10 @@ function scatter(geo, mat, n, maxR, lift, rot = true) {
   }
   return im;
 }
-spin.add(scatter(new THREE.CapsuleGeometry(0.022, 0.05, 3, 6), M.grain, 520, 1.22, 0.01));
+food.add(scatter(new THREE.CapsuleGeometry(0.022, 0.05, 3, 6), M.grain, 520, 1.22, 0.01));
 
 const anchors = {};
-function anchor(name, x, y, z) { const o = new THREE.Object3D(); o.position.set(x, y, z); spin.add(o); anchors[name] = o; }
+function anchor(name, x, y, z) { const o = new THREE.Object3D(); o.position.set(x, y, z); food.add(o); anchors[name] = o; }
 anchor('rice', 0.05, surf(0, 0) + 0.05, 0.9);
 
 // Лосось — веер ломтиков
@@ -154,7 +156,7 @@ anchor('rice', 0.05, surf(0, 0) + 0.05, 0.9);
     const cx = 0.6 + Math.cos(a) * 0.08 * i, cz = 0.25 - 0.13 * i + 0.3;
     m.position.set(cx - 0.05, surf(cx, cz) + 0.06 + i * 0.012, cz - 0.2);
     m.rotation.set(rnd(-0.08, 0.08), 0.9 + a * 0.5, rnd(-0.12, 0.05));
-    spin.add(m);
+    food.add(m);
   }
   anchor('salmon', 0.62, surf(0.6, 0.1) + 0.25, 0.1);
 }
@@ -178,7 +180,7 @@ anchor('rice', 0.05, surf(0, 0) + 0.05, 0.9);
     grp.rotation.set(-Math.PI / 2 + 0.25, 0, -0.9 + i * 0.12);
     grp.rotation.order = 'YXZ';
     grp.rotation.y = 0.5 + i * 0.1;
-    spin.add(grp);
+    food.add(grp);
   }
   anchor('avocado', -0.6, surf(-0.6, 0.25) + 0.25, 0.25);
 }
@@ -194,7 +196,7 @@ anchor('rice', 0.05, surf(0, 0) + 0.05, 0.9);
     const y = new THREE.Mesh(yolkG, M.yolk); y.scale.set(1, 0.45, 1); y.position.y = 0.01;
     e.add(w, c, y); e.scale.set(1, 0.9, 1.3);
     e.position.set(x, surf(x, z) + 0.12, z); e.rotation.set(0.08, ry, 0);
-    spin.add(e);
+    food.add(e);
   });
   anchor('egg', 0.2, surf(0.2, -0.55) + 0.3, -0.55);
 }
@@ -206,7 +208,7 @@ anchor('rice', 0.05, surf(0, 0) + 0.05, 0.9);
     const t = new THREE.Mesh(g, M.tomato); t.scale.set(1, 0.92, 1);
     t.position.set(x, surf(x, z) + 0.12, z);
     const s = new THREE.Mesh(sg, M.stem); s.position.y = 0.14; s.rotation.x = Math.PI; t.add(s);
-    spin.add(t);
+    food.add(t);
   });
   anchor('tomato', -0.48, surf(-0.48, -0.3) + 0.32, -0.3);
 }
@@ -217,7 +219,7 @@ anchor('rice', 0.05, surf(0, 0) + 0.05, 0.9);
     const x = rnd(0.45, 0.85), z = rnd(-0.15, 0.15) - 0.25;
     const b = new THREE.Mesh(bean, M.edamame);
     b.position.set(x, surf(x, z) + 0.05, z); b.rotation.set(Math.PI / 2, 0, Math.random() * 3);
-    spin.add(b);
+    food.add(b);
   }
   const leafG = new THREE.SphereGeometry(1, 16, 8);
   for (let i = 0; i < 5; i++) {
@@ -225,14 +227,14 @@ anchor('rice', 0.05, surf(0, 0) + 0.05, 0.9);
     l.scale.set(0.2, 0.018, 0.09);
     const x = rnd(-0.2, 0.2), z = rnd(-0.1, 0.25);
     l.position.set(x, surf(x, z) + 0.06, z); l.rotation.set(rnd(-0.3, 0.3), Math.random() * 6, rnd(-0.2, 0.2));
-    spin.add(l);
+    food.add(l);
   }
 }
 // Кунжут
 {
   const g = new THREE.SphereGeometry(0.014, 6, 4); g.scale(1, 0.45, 0.65);
-  spin.add(scatter(g, M.sesameW, 110, 1.1, 0.14, false));
-  spin.add(scatter(g, M.sesameB, 50, 1.1, 0.14, false));
+  food.add(scatter(g, M.sesameW, 110, 1.1, 0.14, false));
+  food.add(scatter(g, M.sesameB, 50, 1.1, 0.14, false));
 }
 
 // ---------- кольца БЖУ ----------
@@ -281,49 +283,109 @@ const F = types.map((t, i) => {
 });
 
 // ---------- настоящие 3D-модели (фотосканы Poly Haven, CC0) ----------
-// Лежат в папке models/. Пока грузятся (или если их нет) — летают нарисованные в коде.
-const REAL = {
-  food_avocado_01: { file: 'models/food_avocado_01/food_avocado_01_1k.gltf', size: 0.62 },
-  food_lime_01: { file: 'models/food_lime_01/food_lime_01_1k.gltf', size: 0.42 },
-  food_kiwi_01: { file: 'models/food_kiwi_01/food_kiwi_01_1k.gltf', size: 0.46 },
-  lemon: { file: 'models/lemon/lemon_1k.gltf', size: 0.5 },
-};
-// какой летающий ингредиент на какую модель заменить (номер → модель)
-const SWAP = { 1: 'lemon', 3: 'food_avocado_01', 4: 'food_lime_01', 7: 'food_kiwi_01', 8: 'food_lime_01', 9: 'food_kiwi_01', 12: 'food_avocado_01' };
+// Лежат в папке models/. У Poly Haven реальный масштаб (метры), поэтому
+// фрукты и миска получают один общий масштаб и сохраняют настоящие пропорции.
 const loader = new GLTFLoader();
-Object.entries(REAL).forEach(([id, m]) => {
-  loader.load(m.file, gltf => {
-    const model = gltf.scene;
-    // Центрируем и приводим к нужному размеру, какими бы ни были исходные единицы
-    const box = new THREE.Box3().setFromObject(model);
-    const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
-    model.position.sub(center);
-    const holder = new THREE.Group(); holder.add(model);
-    holder.scale.setScalar(m.size / Math.max(size.x, size.y, size.z));
-    Object.entries(SWAP).forEach(([i, want]) => {
-      if (want !== id) return;
-      const f = F[+i];
-      f.mesh.clear();
-      f.mesh.add(holder.clone());
-      f.spin.multiplyScalar(0.5);
-      f.s = rnd(1.0, 1.2);
-    });
-  }, undefined, () => { /* модели нет — остаётся нарисованный вариант */ });
+const cache = {};
+function loadModel(id) {
+  if (!cache[id]) cache[id] = new Promise(res => loader.load(`models/${id}/${id}_1k.gltf`, g => {
+    const m = g.scene;
+    const box = new THREE.Box3().setFromObject(m);
+    const size = box.getSize(new THREE.Vector3());
+    m.position.sub(box.getCenter(new THREE.Vector3()));
+    // Длинной стороной — горизонтально, чтобы фрукт «лежал», а не стоял
+    const g2 = new THREE.Group(); g2.add(m);
+    if (size.y > Math.max(size.x, size.z) * 1.1) { g2.rotation.z = Math.PI / 2; [size.x, size.y] = [size.y, size.x]; }
+    const p = new THREE.Group(); p.add(g2);
+    p.userData.size = size;                      // размер в метрах
+    res(p);
+  }, undefined, () => res(null)));
+  return cache[id];
+}
+const FRUITS = ['food_avocado_01', 'food_pomegranate_01', 'food_apple_01', 'food_kiwi_01', 'lemon', 'food_lime_01', 'food_lychee_01'];
+
+// Летающие фрукты: заменяем нарисованные ингредиенты по мере загрузки
+F.forEach((f, i) => {
+  const id = FRUITS[i % FRUITS.length];
+  loadModel(id).then(p => {
+    if (!p) return;
+    const c = p.clone();
+    const s = p.userData.size;
+    c.scale.setScalar((id === 'food_lychee_01' ? 0.32 : 0.55) / Math.max(s.x, s.y, s.z));
+    f.mesh.clear(); f.mesh.add(c);
+    f.spin.multiplyScalar(0.5); f.s = rnd(1.0, 1.2);
+  });
 });
 
-// Настоящая деревянная миска (фотоскан Poly Haven, CC0) вместо тарелки из кода
-loader.load('models/wooden_bowl_01/wooden_bowl_01_1k.gltf', gltf => {
-  const model = gltf.scene;
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
-  const k = 3.45 / Math.max(size.x, size.z);          // чуть шире тарелки из кода, чтобы рис лёг внутрь
-  model.position.set(-center.x, -box.min.y, -center.z); // дно на нуле
-  const holder = new THREE.Group(); holder.add(model);
-  holder.scale.setScalar(k);
-  holder.position.y = 0.52 - size.y * k;               // край чуть выше еды
-  spin.add(holder);
-  codeBowl.visible = false;
-}, undefined, () => {});
+// Что лежит в миске: модель, место (x, z), поворот и подпись для сканера
+const BOWL = [
+  { id: 'food_avocado_01', x: -0.5, z: 0.2, ry: 0.5, tag: ['Авокадо', 240] },
+  { id: 'food_pomegranate_01', x: 0.55, z: -0.35, ry: 1.2, tag: ['Гранат', 230] },
+  { id: 'food_apple_01', x: 0.55, z: 0.55, ry: 2.0, tag: ['Яблоко', 95] },
+  { id: 'food_kiwi_01', x: -0.95, z: -0.3, ry: 0.9, tag: ['Киви', 42] },
+  { id: 'lemon', x: -0.2, z: -0.7, ry: 2.6 },
+  { id: 'food_lime_01', x: 1.0, z: 0.1, ry: 0.3 },
+  { id: 'food_kiwi_01', x: -0.15, z: 0.85, ry: 2.2 },
+  { id: 'food_lime_01', x: -0.85, z: 0.75, ry: 1.7 },
+  { id: 'food_lychee_01', x: 0.1, z: 0.05, ry: 0.0, tag: ['Личи', 20] },
+  { id: 'food_lychee_01', x: 0.3, z: 0.2, ry: 1.0 },
+  { id: 'food_lychee_01', x: 0.12, z: 0.3, ry: 2.0 },
+];
+let bowlKcal = 564;
+
+(async () => {
+  const bowl = await loadModel('wooden_bowl_01');
+  if (!bowl) return;                                   // миски нет — остаётся тарелка из кода
+  const bs = bowl.userData.size;
+  const k = 3.45 / Math.max(bs.x, bs.z);                // метры → единицы сцены
+  bowl.scale.setScalar(k);
+  bowl.position.y = 0.52 - bs.y * k / 2;                // верхний край на высоте 0.52
+  // Высоту дна миски в любой точке узнаём лучом сверху вниз
+  const tmp = new THREE.Scene(); tmp.add(bowl); tmp.updateMatrixWorld(true);
+  const ray = new THREE.Raycaster();
+  const floor = (x, z) => {
+    ray.set(new THREE.Vector3(x, 5, z), new THREE.Vector3(0, -1, 0));
+    const hit = ray.intersectObject(bowl, true)[0];
+    return hit ? hit.point.y : 0;
+  };
+  spin.add(bowl); codeBowl.visible = false;
+
+  const protos = await Promise.all(BOWL.map(b => loadModel(b.id)));
+  if (protos.filter(Boolean).length < 5) return;       // фруктов мало — оставляем поке
+  const placed = [];
+  const fruitGroup = new THREE.Group();
+  BOWL.forEach((b, i) => {
+    const p = protos[i]; if (!p) return;
+    const s = p.userData.size;
+    const r = Math.max(s.x, s.z) * k / 2 * 0.85;        // радиус «шарика» для раскладки
+    const h = s.y * k / 2;
+    let y = floor(b.x, b.z) + h;
+    // Кладём поверх соседей, если они мешают (как шарики в миске)
+    placed.forEach(q => {
+      const d = Math.hypot(b.x - q.x, b.z - q.z), rr = r + q.r;
+      if (d < rr) y = Math.max(y, q.y + Math.sqrt(rr * rr - d * d) * 0.8);
+    });
+    const c = p.clone(); c.scale.setScalar(k);
+    c.position.set(b.x, y, b.z); c.rotation.y = b.ry;
+    fruitGroup.add(c);
+    placed.push({ x: b.x, z: b.z, y, r });
+    if (b.tag) {
+      const o = new THREE.Object3D(); o.position.set(b.x, y + h + 0.05, b.z); fruitGroup.add(o);
+      b.anchor = o;
+    }
+  });
+  spin.add(fruitGroup); food.visible = false;
+  // Подписи сканера — под фрукты
+  const tagged = BOWL.filter(b => b.anchor);
+  tags.forEach((t, i) => {
+    const b = tagged[i];
+    if (!b) { t.el.remove(); t.a = null; return; }
+    t.el.querySelector('b').textContent = b.tag[0];
+    t.el.querySelector('span').textContent = b.tag[1] + ' ккал';
+    t.a = b.anchor;
+  });
+  bowlKcal = tagged.reduce((a, b) => a + b.tag[1], 0);
+})();
 
 // ---------- состояния по секциям ----------
 //  bx,by — позиция тарелки, bs — масштаб, rx — наклон к камере,
@@ -467,6 +529,7 @@ function tick() {
 
   // подписи продуктов
   tags.forEach((t, i) => {
+    if (!t.a) return;
     const o = smooth(0.35 + i * 0.1, 0.6 + i * 0.1, cur.lab);
     t.el.style.opacity = o;
     if (o > 0.01) {
@@ -474,7 +537,7 @@ function tick() {
       t.el.style.transform = `translate(${p.x}px,${p.y - 30 - (1 - o) * 14}px) translate(-50%,-100%)`;
     }
   });
-  totalEl.textContent = Math.round(564 * smooth(0.3, 1, cur.lab));
+  totalEl.textContent = Math.round(bowlKcal * smooth(0.3, 1, cur.lab));
 
   requestAnimationFrame(tick);
 }
