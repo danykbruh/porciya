@@ -277,7 +277,7 @@ const F = types.map((t, i) => {
   const mesh = new THREE.Group(); mesh.add(makeFloater(t));
   // Раскладываем по «поясу» вокруг тарелки, равномерно по углу, чуть позади неё
   const a = (i / types.length) * Math.PI * 2 + rnd(-0.2, 0.2);
-  const r = rnd(1.9, 2.6);
+  const r = rnd(2.35, 3.0);
   const base = new THREE.Vector3(Math.cos(a) * r, rnd(-1.0, 1.2), Math.sin(a) * r * 0.5 - 0.6);
   floaters.add(mesh);
   return { mesh, base, phase: Math.random() * 10, spin: new THREE.Vector3(rnd(-0.6, 0.6), rnd(-0.6, 0.6), rnd(-0.6, 0.6)), s: rnd(0.8, 1.15) };
