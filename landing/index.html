@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Порция — ешь как обычно, мы посчитаем</title>
+<meta name="description" content="Порция — дневник питания: сфотографируй тарелку, ИИ посчитает калории и БЖУ. Штрихкоды, этикетки, напоминания.">
+<meta name="theme-color" content="#1D4A30">
+<link rel="icon" type="image/svg+xml" href="../icons/icon.svg">
+<link rel="apple-touch-icon" href="../icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+
+<canvas id="scene" aria-hidden="true"></canvas>
+
+<!-- 2D-слой поверх 3D: рамка сканера и подписи к продуктам -->
+<div class="overlay" aria-hidden="true">
+  <div class="scanframe">
+    <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="scanline"></div>
+    <div class="scanchip"><span class="pulse"></span>ИИ распознаёт блюдо…</div>
+  </div>
+  <div class="tag" data-a="salmon"><b>Лосось</b><span>180 ккал</span></div>
+  <div class="tag" data-a="rice"><b>Рис</b><span>170 ккал</span></div>
+  <div class="tag" data-a="avocado"><b>Авокадо</b><span>120 ккал</span></div>
+  <div class="tag" data-a="egg"><b>Яйцо</b><span>78 ккал</span></div>
+  <div class="tag" data-a="tomato"><b>Томаты</b><span>16 ккал</span></div>
+</div>
+
+<header class="nav">
+  <a class="logo" href="#top" aria-label="Порция">
+    <img src="../icons/icon.svg" alt="" width="30" height="30">
+    <span>Порция</span>
+  </a>
+  <a class="btn btn-sm" href="../">Открыть приложение</a>
+  <div class="progress"><i></i></div>
+</header>
+
+<nav class="dots" aria-label="Разделы">
+  <a href="#s0" aria-label="Начало"></a><a href="#s1" aria-label="Фото"></a><a href="#s2" aria-label="БЖУ"></a>
+  <a href="#s3" aria-label="Ввод"></a><a href="#s4" aria-label="Напоминания"></a><a href="#s5" aria-label="Начать"></a>
+</nav>
+
+<main id="top">
+
+  <section id="s0" class="sec" data-i="0">
+    <div class="big">ПОРЦИЯ</div>
+    <div class="content left">
+      <p class="eyebrow reveal">Дневник питания с ИИ</p>
+      <h1 class="reveal">Ешь как обычно.<br><em>Мы посчитаем.</em></h1>
+      <p class="lead reveal">Сфотографируй тарелку — Порция узнает блюдо, посчитает калории и БЖУ и напомнит про ужин.</p>
+      <div class="actions reveal">
+        <a class="btn" href="../">Открыть Порцию</a>
+        <a class="btn ghost" href="#s1">Как это работает ↓</a>
+      </div>
+      <img class="fallback-logo" src="../icons/icon.svg" alt="">
+    </div>
+    <div class="scrollhint">листай</div>
+  </section>
+
+  <section id="s1" class="sec dark" data-i="1">
+    <div class="big">СКАН</div>
+    <div class="content right">
+      <p class="eyebrow reveal">01 — Фото вместо таблиц</p>
+      <h2 class="reveal">Одно фото —<br>и всё посчитано</h2>
+      <p class="lead reveal">ИИ видит продукты на тарелке и оценивает вес порции. Не угадал — поправь в один тап.</p>
+      <div class="total reveal">Итого <strong><span data-total>0</span> ккал</strong></div>
+    </div>
+  </section>
+
+  <section id="s2" class="sec" data-i="2">
+    <div class="big">БЖУ</div>
+    <div class="content right">
+      <p class="eyebrow reveal">02 — Цель на день</p>
+      <h2 class="reveal">Белки, жиры, углеводы — одним взглядом</h2>
+      <p class="lead reveal">Кольца заполняются с каждым приёмом пищи и показывают, сколько осталось до твоей цели.</p>
+      <ul class="macros reveal">
+        <li><i style="--c:var(--p)"></i>Белки <b><span data-count="72">0</span>%</b></li>
+        <li><i style="--c:var(--f)"></i>Жиры <b><span data-count="55">0</span>%</b></li>
+        <li><i style="--c:var(--u)"></i>Углеводы <b><span data-count="84">0</span>%</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="s3" class="sec" data-i="3">
+    <div class="big">БЫСТРО</div>
+    <div class="content left">
+      <p class="eyebrow reveal">03 — Без ручного ввода</p>
+      <h2 class="reveal">Штрихкод, этикетка или&nbsp;пара слов</h2>
+      <div class="cards">
+        <div class="card reveal"><span class="ic">▥</span><b>Сканер штрихкодов</b><p>Наведи камеру на упаковку — состав подтянется сам.</p></div>
+        <div class="card reveal"><span class="ic">◧</span><b>Фото этикетки</b><p>ИИ прочитает таблицу пищевой ценности.</p></div>
+        <div class="card reveal"><span class="ic">✎</span><b>Словами</b><p>«Гречка с котлетой» — и готово.</p></div>
+        <div class="card reveal"><span class="ic">☰</span><b>База продуктов</b><p>Больше 160 популярных продуктов с подсказками.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s4" class="sec dark" data-i="4">
+    <div class="big">ВОВРЕМЯ</div>
+    <div class="content right">
+      <p class="eyebrow reveal">04 — Напоминания</p>
+      <h2 class="reveal">Порция напомнит, если&nbsp;забудешь</h2>
+      <div class="notes">
+        <div class="note reveal"><span class="app"></span><div><b>🍳 Завтрак</b><p>Запиши, что съел утром — это 10 секунд.</p></div><time>9:00</time></div>
+        <div class="note reveal"><span class="app"></span><div><b>🍲 Обед</b><p>До цели по белку осталось 38 г.</p></div><time>13:30</time></div>
+        <div class="note reveal"><span class="app"></span><div><b>🍽 Ужин</b><p>Сфотографируй тарелку — посчитаем сами.</p></div><time>19:00</time></div>
+      </div>
+      <p class="lead small reveal">Работает как приложение: установи Порцию на главный экран iPhone или Android.</p>
+    </div>
+  </section>
+
+  <section id="s5" class="sec" data-i="5">
+    <div class="big">НАЧНИ</div>
+    <div class="content center">
+      <p class="eyebrow reveal">Бесплатно · вход по почте</p>
+      <h2 class="reveal">Начни с&nbsp;сегодняшнего ужина</h2>
+      <div class="actions reveal"><a class="btn big-btn" href="../">Открыть Порцию</a></div>
+    </div>
+    <footer>© 2026 Порция</footer>
+  </section>
+
+</main>
+
+<script type="module" src="scene.js"></script>
+</body>
+</html>
