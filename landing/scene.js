@@ -336,18 +336,10 @@ const BOWL = [
 const FRUIT_SCALE = 0.8; // фрукты чуть меньше настоящих — так миска смотрится аккуратнее
 let bowlKcal = 564;
 
-// ---------- вступление: фрукты падают в пустую миску ----------
+// ---------- вступление: фрукты скатываются в пустую миску ----------
 const intro = { start: 0, drops: [], floatK: reduceMotion ? 1 : 0, floatTarget: reduceMotion ? 1 : 0 };
 // Если модели так и не загрузились — через 6 секунд просто показываем летающие ингредиенты
 setTimeout(() => { if (!intro.drops.length) intro.floatTarget = 1; }, 6000);
-// Падение с отскоком: быстро вниз, пара затухающих подпрыгиваний
-function bounce(t) {
-  const n = 7.5625, d = 2.75;
-  if (t < 1 / d) return n * t * t;
-  if (t < 2 / d) return n * (t -= 1.5 / d) * t + 0.75;
-  if (t < 2.5 / d) return n * (t -= 2.25 / d) * t + 0.9375;
-  return n * (t -= 2.625 / d) * t + 0.984375;
-}
 
 (async () => {
   const bowl = await loadModel('wooden_bowl_01');
@@ -395,21 +387,41 @@ function bounce(t) {
       if (!moved) break;
     }
     // Точка касания: низ фрукта (как эллипсоида) ложится на самую высокую точку дна под ним
-    let y = -Infinity;
-    for (let ring = 0; ring <= 3; ring++) {
-      const d = fr * ring / 3, n = ring ? 10 : 1;
-      for (let j = 0; j < n; j++) {
-        const t = j / n * Math.PI * 2;
-        const fy = floor(x + Math.cos(t) * d, z + Math.sin(t) * d);
-        y = Math.max(y, fy + h * Math.sqrt(Math.max(0, 1 - (d / fr) ** 2)));
+    const contact = (x, z) => {
+      let y = -Infinity;
+      for (let ring = 0; ring <= 3; ring++) {
+        const d = fr * ring / 3, n = ring ? 10 : 1;
+        for (let j = 0; j < n; j++) {
+          const t = j / n * Math.PI * 2;
+          const fy = floor(x + Math.cos(t) * d, z + Math.sin(t) * d);
+          y = Math.max(y, fy + h * Math.sqrt(Math.max(0, 1 - (d / fr) ** 2)));
+        }
       }
-    }
-    y -= 0.015;                                         // чуть «вдавливаем», чтобы не было щели
+      return y - 0.015;                                 // чуть «вдавливаем», чтобы не было щели
+    };
+    const y = contact(x, z);
     const c = p.clone(); c.scale.setScalar(kk);
     c.position.set(x, y, z); c.rotation.y = b.ry;
     if (!reduceMotion) {
+      // Путь скатывания: фрукт мягко опускается на стенку миски у края
+      // и по её поверхности катится вниз, к своему месту
+      const R = Math.hypot(x, z);
+      const ang = R > 0.15 ? Math.atan2(z, x) : rnd(0, Math.PI * 2);
+      const sx = Math.cos(ang) * 1.42, sz = Math.sin(ang) * 1.42;
+      const path = [];
+      for (let q = 0; q <= 24; q++) {
+        const u = q / 24, px = sx + (x - sx) * u, pz = sz + (z - sz) * u;
+        path.push(new THREE.Vector3(px, q === 24 ? y : contact(px, pz), pz));
+      }
+      let len = 0;
+      for (let q = 1; q < path.length; q++) len += path[q].distanceTo(path[q - 1]);
+      const dir = new THREE.Vector3(x - sx, 0, z - sz).normalize();
       c.visible = false;
-      intro.drops.push({ obj: c, y, delay: 0.2 + intro.drops.length * 0.16, h: rnd(2.6, 3.4), rx: rnd(-1.4, 1.4), rz: rnd(-1.4, 1.4) });
+      intro.drops.push({
+        obj: c, path, len, fr, R,
+        axis: new THREE.Vector3(0, 1, 0).cross(dir).normalize(),
+        base: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, b.ry, 0)),
+      });
     }
     fruitGroup.add(c);
     placed.push({ x, z, fr });
@@ -420,6 +432,8 @@ function bounce(t) {
     }
   });
   window.porciyaDebug = debug;
+  intro.drops.sort((a, b) => a.R - b.R);                // сначала в центр, потом к краям — пути не пересекаются
+  intro.drops.forEach((d, i) => { d.delay = 0.2 + i * 0.22; });
   spin.add(fruitGroup); food.visible = false;
   intro.start = clock.elapsedTime;
   if (!intro.drops.length) intro.floatTarget = 1;
@@ -515,13 +529,27 @@ function tick() {
     const T0 = time - intro.start;
     let done = true;
     intro.drops.forEach(d => {
-      const t = (T0 - d.delay) / 0.9;
+      const t = (T0 - d.delay) / 1.7;                   // 1.7 с на фрукт: опуститься и скатиться
       if (t < 0) { d.obj.visible = false; done = false; return; }
-      const k1 = Math.min(1, t);
       d.obj.visible = true;
-      d.obj.position.y = d.y + (1 - bounce(k1)) * d.h;
-      const w = (1 - k1) * (1 - k1);                   // кувыркание затухает к приземлению
-      d.obj.rotation.x = d.rx * w; d.obj.rotation.z = d.rz * w;
+      const k1 = Math.min(1, t);
+      const DROP = 0.25;                                  // первая часть — мягкий спуск на стенку
+      let p, travelled;
+      if (k1 < DROP) {
+        const e = k1 / DROP, e2 = 1 - (1 - e) * (1 - e); // замедляется к касанию, без удара
+        p = d.path[0].clone(); p.y += (1 - e2) * 1.6;
+        travelled = 0;
+      } else {
+        const e = (k1 - DROP) / (1 - DROP);
+        const s2 = e < 0.5 ? 2 * e * e : 1 - Math.pow(-2 * e + 2, 2) / 2; // разгон и плавная остановка
+        const f = s2 * (d.path.length - 1), q = Math.min(d.path.length - 2, Math.floor(f));
+        p = d.path[q].clone().lerp(d.path[q + 1], f - q);
+        travelled = s2 * d.len;
+      }
+      d.obj.position.copy(p);
+      // Качение без проскальзывания: поворот = пройденный путь / радиус; к концу — ровно исходная поза
+      const roll = new THREE.Quaternion().setFromAxisAngle(d.axis, -(d.len - travelled) / d.fr);
+      d.obj.quaternion.copy(roll).multiply(d.base);
       if (t < 1) done = false;
     });
     if (done) { intro.drops = []; intro.floatTarget = 1; }
