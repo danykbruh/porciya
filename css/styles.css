@@ -1,7 +1,7 @@
 /* Порция — стили */
 :root{
   --bg:#F4F6F1; --surface:#FFFFFF; --ink:#1E2A22; --muted:#66756A; --line:#DDE3DA;
-  --inset:#F4F6F1; --sheet:#FFFFFF; --glow:none;
+  --inset:#F4F6F1; --sheet:#FFFFFF; --glow:none; --field-line:#7C8C80;
   --accent:#2F7A4A; --accent-ink:#FFFFFF; --accent-soft:#E2EFE5; --danger:#B3402E;
   --c-breakfast:#D98E1F; --c-lunch:#2F7A4A; --c-dinner:#4B5BB8; --c-snack:#C4577E;
   --m-p:#4B5BB8; --m-f:#D98E1F; --m-c:#2F7A4A;
@@ -13,7 +13,7 @@
   :root:not([data-theme="light"]){
     color-scheme:dark;
     --bg:#1E150D; --surface:rgba(48,34,22,.42); --ink:#F4EFE6; --muted:#BDAE9A; --line:rgba(244,239,230,.12);
-    --inset:rgba(255,248,238,.05); --sheet:rgba(36,25,16,.9);
+    --inset:rgba(255,248,238,.05); --sheet:rgba(36,25,16,.9); --field-line:rgba(244,239,230,.4);
     --glow:radial-gradient(ellipse 80% 55% at 50% 0%,rgba(212,176,110,.12),transparent 70%);
     --accent:#D4B06E; --accent-ink:#1E150D; --accent-soft:rgba(212,176,110,.16); --danger:#E88A72;
     --c-breakfast:#E8A949; --c-lunch:#5DB67C; --c-dinner:#8C99EC; --c-snack:#E07FA3;
@@ -23,7 +23,7 @@
 :root[data-theme="dark"]{
   color-scheme:dark;
   --bg:#1E150D; --surface:rgba(48,34,22,.42); --ink:#F4EFE6; --muted:#BDAE9A; --line:rgba(244,239,230,.12);
-    --inset:rgba(255,248,238,.05); --sheet:rgba(36,25,16,.9);
+    --inset:rgba(255,248,238,.05); --sheet:rgba(36,25,16,.9); --field-line:rgba(244,239,230,.4);
     --glow:radial-gradient(ellipse 80% 55% at 50% 0%,rgba(212,176,110,.12),transparent 70%);
   --accent:#D4B06E; --accent-ink:#1E150D; --accent-soft:rgba(212,176,110,.16); --danger:#E88A72;
   --c-breakfast:#E8A949; --c-lunch:#5DB67C; --c-dinner:#8C99EC; --c-snack:#E07FA3;
@@ -34,7 +34,7 @@ html:root[data-app-theme="light"]{
   color-scheme:light;
   --logo:#1D4A30;
   --bg:#F4F6F1; --surface:#FFFFFF; --ink:#1E2A22; --muted:#66756A; --line:#DDE3DA;
-  --inset:#F4F6F1; --sheet:#FFFFFF; --glow:none;
+  --inset:#F4F6F1; --sheet:#FFFFFF; --glow:none; --field-line:#7C8C80;
   --accent:#2F7A4A; --accent-ink:#FFFFFF; --accent-soft:#E2EFE5; --danger:#B3402E;
   --c-breakfast:#D98E1F; --c-lunch:#2F7A4A; --c-dinner:#4B5BB8; --c-snack:#C4577E;
   --m-p:#4B5BB8; --m-f:#D98E1F; --m-c:#2F7A4A;
@@ -42,7 +42,7 @@ html:root[data-app-theme="light"]{
 html:root[data-app-theme="dark"]{
   color-scheme:dark;
   --bg:#1E150D; --surface:rgba(48,34,22,.42); --ink:#F4EFE6; --muted:#BDAE9A; --line:rgba(244,239,230,.12);
-    --inset:rgba(255,248,238,.05); --sheet:rgba(36,25,16,.9);
+    --inset:rgba(255,248,238,.05); --sheet:rgba(36,25,16,.9); --field-line:rgba(244,239,230,.4);
     --glow:radial-gradient(ellipse 80% 55% at 50% 0%,rgba(212,176,110,.12),transparent 70%);
   --accent:#D4B06E; --accent-ink:#1E150D; --accent-soft:rgba(212,176,110,.16); --danger:#E88A72;
   --c-breakfast:#E8A949; --c-lunch:#5DB67C; --c-dinner:#8C99EC; --c-snack:#E07FA3;
@@ -76,7 +76,7 @@ button{cursor:pointer}
 
 .week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .wd{border:1px solid transparent;background:none;border-radius:12px;padding:8px 0 6px;display:flex;flex-direction:column;align-items:center;gap:4px}
-.wd .dn{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.wd .dn{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .wd .dd{font-weight:600;font-variant-numeric:tabular-nums}
 .wd .dots{display:flex;gap:3px;height:6px}
 .wd .dots i{width:6px;height:6px;border-radius:50%;display:block}
@@ -226,7 +226,7 @@ fieldset.seg legend{font-size:12px;color:var(--muted);padding:0;margin-bottom:4p
 .plan .pn{font-size:13px;color:var(--muted)}
 .plan .pp{font-family:var(--display);font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
 .plan .ps{font-size:12px;color:var(--muted)}
-.plan .save{align-self:flex-start;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--accent);color:var(--accent-ink);margin-bottom:4px}
+.plan .save{align-self:flex-start;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--accent);color:var(--accent-ink);margin-bottom:4px}
 .sheet .submit{align-self:stretch;padding:14px;font-size:16px}
 .demo{border-radius:12px;padding:12px;background:var(--inset);border:1px dashed var(--line);font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:8px}
 .demo .btns .ghost{padding:6px 12px;font-size:13px}
@@ -347,3 +347,20 @@ body.signed-out .field input:-webkit-autofill{-webkit-text-fill-color:var(--ink)
 html.landing-on #landingFrame{display:block;position:fixed;inset:0;width:100%;height:100%;border:0;z-index:100;background:#1E150D;transition:opacity .45s ease}
 html.landing-on body{overflow:hidden}
 html.landing-leaving #landingFrame{opacity:0;pointer-events:none}
+
+/* ---- Доступность (проверка по чек-листу UI/UX Pro Max) ---- */
+/* Границы полей ввода видны: контраст не ниже 3:1 с фоном поля */
+.field input,.field select,.field textarea{border-color:var(--field-line)}
+body.signed-out .field input{border-color:rgba(244,239,230,.4)}
+/* Кнопки для пальца: не меньше 44×44 px */
+.iconbtn,.x-close{width:44px;height:44px}
+/* Мелкие кнопки-ссылки и значки: видимый размер прежний, а область нажатия больше */
+.del,.star,.edit,.pluslink,.linkbtn,.fav button,.seg span,.types span{position:relative}
+.del::after,.star::after,.edit::after{content:"";position:absolute;inset:-10px -4px}
+.pluslink::after,.linkbtn::after{content:"";position:absolute;inset:-12px -6px}
+.fav button::after{content:"";position:absolute;inset:-8px 0}
+.seg span::after,.types span::after{content:"";position:absolute;inset:-6px -2px}
+/* Если в системе включено «уменьшение движения» — без анимаций */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
